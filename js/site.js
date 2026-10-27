@@ -21,6 +21,25 @@
     if (e.target.closest("a")) { links.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); header.classList.remove("menu-open"); }
   });
 
+  /* ---------- bottom bar (phones): current section + account ---------- */
+  const tabs = [...document.querySelectorAll(".tabbar a[data-tab]")];
+  const watched = ["savings", "cook", "collect"].map((id) => document.getElementById(id));
+  const markTab = () => {
+    const y = window.scrollY + window.innerHeight * 0.4;
+    const cur = watched.filter((sec) => sec.offsetTop <= y && sec.offsetTop + sec.offsetHeight > y)[0];
+    const id = cur ? cur.id : window.scrollY < 300 ? "top" : "";
+    tabs.forEach((t) => { const on = t.dataset.tab === id; t.classList.toggle("on", on); on ? t.setAttribute("aria-current", "location") : t.removeAttribute("aria-current"); });
+  };
+  window.addEventListener("scroll", markTab, { passive: true });
+  markTab();
+  const me = window.TyAccount && window.TyAccount.session();
+  if (me) {
+    const acc = document.getElementById("tab-account");
+    acc.href = "login.html";
+    acc.querySelector("span").textContent = "Account";
+    acc.setAttribute("aria-label", "Account: " + me.name);
+  }
+
   const week = M.weekLabels(1)[0];
   document.getElementById("hero-week").textContent = "week of " + week;
 
@@ -299,6 +318,10 @@
     const featured = M.featuredCrops();
     document.getElementById("qty-list").replaceChildren(...featured.concat(M.CROPS.filter((c) => qty[c.id] && !featured.includes(c))).map(qtyRow));
     basketBtn.textContent = co.goods ? "My basket · " + M.money(co.total) : "Check my savings";
+    const packs = M.sum(Object.values(qty));
+    const badge = document.getElementById("tab-count");
+    badge.hidden = !packs;
+    badge.textContent = String(packs);
 
     // The full checkout total: vegetables, bundle saving, fulfilment and any voucher.
     const voucherLine = voucher ? (co.voucherOk ? M.money(-co.voucherOff) : "Needs a " + M.money(M.VOUCHER_MIN) + " basket") : "None";

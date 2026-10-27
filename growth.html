@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-require="team">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/account.js"></script>
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <meta name="theme-color" content="#054f12">
 </head>
@@ -26,7 +27,9 @@
       </div>
     </div>
     <div class="hub-actions">
-      <a class="btn btn-sm btn-outline-light" href="index.html">Consumer page ↗</a>
+      <div data-mount="text-size"></div>
+      <a class="btn btn-sm btn-outline-light" href="index.html">Shop page</a>
+      <div data-mount="account" data-tone="light"></div>
     </div>
   </header>
 

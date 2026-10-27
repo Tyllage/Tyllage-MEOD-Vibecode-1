@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in — Tyllage | Prototype</title>
+  <meta name="description" content="Prototype: mock log-in for Tyllage shoppers and team members. Nothing is checked or sent anywhere.">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/account.js"></script>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <meta name="theme-color" content="#054f12">
+</head>
+<body>
+  <a class="skip-link" href="#login">Skip to log in</a>
+  <div class="proto-bar" role="note">Prototype log-in · any details work · nothing is checked, stored or sent</div>
+
+  <div class="login-page">
+    <aside class="login-art">
+      <img class="bg" src="assets/img/hero-farm-640.webp" alt="">
+      <div>
+        <a class="brand-badge" href="index.html"><img src="assets/tyllage-logo.png" alt="Tyllage home" width="76" height="34"></a>
+        <h1 id="art-title">Fresh greens, fair prices.</h1>
+      </div>
+      <ul class="login-perks">
+        <li>See your full checkout total before you pay, pickup or delivery.</li>
+        <li>Order the same basket again in one tap.</li>
+        <li>Collect from a neighbour near you, with no delivery fee.</li>
+        <li>Harvested in Kranji on the day it reaches you.</li>
+      </ul>
+      <p class="art-foot muted-light small">© 2026 Tyllage LLP</p>
+    </aside>
+
+    <main class="login-main on-light" id="login" tabindex="-1">
+      <div class="login-top">
+        <a class="back" href="index.html">← Back to shop</a>
+        <div data-mount="text-size"></div>
+      </div>
+      <div class="card login-card" id="login-card" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <script src="js/ui.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

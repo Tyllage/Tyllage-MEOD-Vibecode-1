@@ -17,6 +17,12 @@ The direction is **Smart Value → Repeat customers → Verified demand → Farm
    - **3 · Demand → Growth:** Verified demand, Demand → Planting, New crops.
    - **Marketing:** Promotions & budget, Campaign Studio, Experiments, SEO, Trends & partners, Farm stories. Plus **Overview**, **Strategy** and **Settings**.
 
+## Friendly for every age, plus a mock log-in
+
+- **Text size** (A / A+ / A++) on every page, remembered in this browser; every size scales from one setting.
+- Bigger tap targets (buttons 48px, fields 50px, chips 46px), darker secondary text, five top links on desktop (the menu still lists everything), and an app-style bottom bar on phones: Home, Basket (with pack count), Cook, Pickup, Account.
+- **`login.html`**: shopper or team log-in, create-account for shoppers, show/hide password, plain-English errors, *Continue as a guest*, and demo details. **Mock only:** any well-formed email (or SG mobile for shoppers) and an 8+ character password work; only a display name and role are kept in `localStorage`, never the password, email or number. The team view sends signed-out visitors to the log-in page, but that check runs in the browser and protects nothing.
+
 ## Smart Value & Demand Engine
 
 | | Function | In this prototype | Before it's real | Where |
