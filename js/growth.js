@@ -219,7 +219,7 @@
     const evCount = (t) => ev.filter((e) => e.type === t).length;
 
     return [
-      band("Good to see you, team",
+      band("Good to see you, " + (window.TyAccount && window.TyAccount.session() ? window.TyAccount.shortName(window.TyAccount.session().name) : "team"),
         `${recs.length} growth recommendations · ${verdicts.filter((x) => x.v.key === "test-more").length} crop ready for a production trial · ${openTickets} open customer question${openTickets === 1 ? "" : "s"}`,
         [h("a", { class: "btn btn-sm btn-gold", href: "#value" }, "Smart Value engine"), h("a", { class: "btn btn-sm btn-outline-light", href: "#strategy" }, "Open Strategy")]),
       panel("Smart Value → Repeat customers → Verified demand → Farm growth", chain()),
