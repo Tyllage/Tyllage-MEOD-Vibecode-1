@@ -40,6 +40,21 @@
     acc.setAttribute("aria-label", "Account: " + me.name);
   }
 
+  /* ---------- back to top + gentle reveal ---------- */
+  const toTop = document.querySelector(".to-top");
+  const onTop = () => toTop.classList.toggle("show", window.scrollY > 900);
+  window.addEventListener("scroll", onTop, { passive: true });
+  onTop();
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+    }), { rootMargin: "0px 0px -8% 0px" });
+    document.querySelectorAll(".how-card, .promise, .steps li, .story-photo, .section-title, .crop-grid, .bundle-grid").forEach((el) => {
+      el.classList.add("reveal");
+      io.observe(el);
+    });
+  }
+
   const week = M.weekLabels(1)[0];
   document.getElementById("hero-week").textContent = "week of " + week;
 

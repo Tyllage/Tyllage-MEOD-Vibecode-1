@@ -19,7 +19,7 @@
 
   <header class="site-header">
     <nav class="container nav" aria-label="Main">
-      <a class="logo" href="index.html"><img src="assets/tyllage-logo.png" alt="Tyllage home" width="90" height="40"></a>
+      <a class="logo" href="index.html"><img src="assets/tyllage-logo-white.png" alt="Tyllage home" width="90" height="40"></a>
       <ul class="nav-links" id="nav-links">
         <li><a href="#savings">Savings</a></li>
         <li><a href="#harvest">This week</a></li>
@@ -33,7 +33,7 @@
       </ul>
       <div class="nav-actions">
         <div data-mount="text-size"></div>
-        <div class="nav-account" data-mount="account"></div>
+        <div class="nav-account" data-mount="account" data-tone="light"></div>
         <a class="btn btn-sm btn-gold nav-basket" href="#savings">Check my savings</a>
         <button class="menu-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -46,23 +46,44 @@
     <section class="hero">
       <img class="hero-bg" src="assets/img/hero-farm.webp" srcset="assets/img/hero-farm-640.webp 640w, assets/img/hero-farm.webp 1200w" sizes="100vw" alt="" fetchpriority="high">
       <div class="container">
-        <span class="eyebrow badge">This week at Tyllage · <span id="hero-week"></span></span>
-        <h1 class="script">Fresher. Local. Better value.</h1>
+        <span class="eyebrow badge">Singapore-grown · <span id="hero-week"></span></span>
+        <h1 class="script">Fresher. Local.<br>Better value.</h1>
+        <dl class="hero-stats">
+          <div><dt>S$0</dt><dd>Pickup fee</dd></div>
+          <div><dt>Same day</dt><dd>Harvest to you</dd></div>
+          <div><dt>100%</dt><dd>Grown in Kranji</dd></div>
+        </dl>
         <p class="hero-lead">See how much you could save on Singapore-grown vegetables, and find the most affordable way to get them. Harvested in Kranji, collected from a neighbour near you.</p>
         <div class="hero-ctas">
           <a class="btn btn-gold" href="#savings">Check my weekly savings</a>
           <a class="btn btn-ghost" href="#harvest">See this week's harvest</a>
         </div>
       </div>
+      <a class="scroll-hint" href="#how" aria-label="Scroll to how it works">Scroll</a>
     </section>
 
-    <div class="info-strip">
-      <div class="container info-row">
-        <span><strong>Delivery</strong> Tue · Thu · Sat</span>
-        <span><strong>Free delivery</strong> from S$60</span>
-        <span><strong>Or collect</strong> from a neighbourhood group buy, no delivery fee</span>
+    <section id="how">
+      <div class="container">
+        <span class="eyebrow dark">How Tyllage works</span>
+        <h2 class="script section-title">From Kranji to your table</h2>
+        <p class="lead">Fresh, pesticide-free greens from a Singapore farm, at a fair total price, collected from a neighbour or delivered Tue, Thu and Sat.</p>
+        <div class="how-grid">
+          <a class="how-card card" href="#harvest">
+            <img src="assets/img/fresh-produce.webp" alt="Fresh leafy greens" width="640" height="427" loading="lazy">
+            <span class="how-body"><strong>Picked this morning</strong><span>We harvest on the day it reaches you, so it lasts longer in your fridge.</span><em>See this week's harvest →</em></span>
+          </a>
+          <a class="how-card card" href="#savings">
+            <img src="assets/img/farm-flatlay-640.webp" alt="Vegetables laid out on a table" width="640" height="427" loading="lazy">
+            <span class="how-body"><strong>See the real total</strong><span>Vegetables, pickup or delivery and any reward, before you pay. No surprises.</span><em>Check my savings →</em></span>
+          </a>
+          <a class="how-card card" href="#collect">
+            <img src="assets/img/hero-farm-640.webp" alt="Rows of greens growing on the farm" width="640" height="427" loading="lazy">
+            <span class="how-body"><strong>Collect from a neighbour</strong><span>Join a group buy near your block and skip the S$10 delivery fee.</span><em>Find a pickup →</em></span>
+          </a>
+        </div>
       </div>
-    </div>
+    </section>
+
 
     <section id="savings" class="tint">
       <div class="container">
@@ -120,7 +141,19 @@
       </div>
     </section>
 
-    <section id="deals" class="tint">
+    <section id="promise" class="band-forest">
+      <div class="container">
+        <span class="eyebrow">Why switch to Tyllage</span>
+        <h2 class="script section-title">Fair, fresh and close to home</h2>
+        <div class="promise-grid">
+          <div class="promise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg><h3>A fair total price</h3><p>We show the full checkout total and compare like for like with local greens at the supermarket. No price war, no hidden fees.</p></div>
+          <div class="promise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-9 5-14 15-14 0 10-5 15-14 15"/><path d="M5 19c3-4 6-7 10-9"/></svg><h3>Fresh and pesticide-free</h3><p>Harvested in Kranji the day it reaches you. Ladybirds, not pesticides, keep the pests away.</p></div>
+          <div class="promise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0M14 20a4.5 4.5 0 0 1 7 0"/></svg><h3>Easy to buy every week</h3><p>Collect from a neighbour, reorder your basket in one tap, and earn a reward that's worth it.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="deals">
       <div class="container">
         <span class="eyebrow dark">Fresh deals near you</span>
         <h2 class="script section-title">Better value when neighbours buy together</h2>
@@ -147,7 +180,7 @@
       </div>
     </section>
 
-    <section id="cook">
+    <section id="cook" class="tint">
       <div class="container">
         <span class="eyebrow dark">What should I cook?</span>
         <h2 class="script section-title">Dinner from this week's harvest</h2>
@@ -192,11 +225,12 @@
       </div>
     </section>
 
-    <section id="collect" class="tint">
-      <div class="container">
+    <section id="collect" class="band-gold">
+      <div class="container collect-layout">
+        <div class="collect-intro">
         <span class="eyebrow dark">Neighbourhood group buys</span>
-        <h2 class="script section-title">Collect from a neighbour</h2>
-        <p class="lead">Group-buy leaders receive one delivery for their block and you collect from them. Enter your postal code to find the nearest pickup.</p>
+        <h2 class="script section-title">Buy together, save together</h2>
+        <p class="lead">Group-buy leaders receive one delivery for their block and you collect from them, with no delivery fee. Enter your postal code to find the nearest pickup.</p>
         <form class="postal-form" id="postal-form" novalidate>
           <label for="postal" class="sr-only">Postal code</label>
           <input id="postal" name="postal" inputmode="numeric" autocomplete="postal-code" maxlength="6" placeholder="6-digit postal code, e.g. 820123" required>
@@ -204,11 +238,17 @@
         </form>
         <p class="form-note">Your postal code stays in this browser. We only use its first two digits to estimate your area.</p>
         <p class="form-error" id="postal-error" role="alert"></p>
+        </div>
+        <ol class="steps">
+          <li><b>1</b><span>Find a pickup near your block and ask to join the leader's group.</span></li>
+          <li><b>2</b><span>Order by 10pm the night before. Your basket is packed with your neighbours'.</span></li>
+          <li><b>3</b><span>Collect on pickup day. No delivery fee, and the more neighbours join, the cheaper it is to run.</span></li>
+        </ol>
         <div class="point-list" id="point-list" aria-live="polite"></div>
       </div>
     </section>
 
-    <section id="next">
+    <section id="next" class="band-berry">
       <div class="container">
         <span class="eyebrow dark">Coming next?</span>
         <h2 class="script section-title">You decide what we grow</h2>
@@ -218,7 +258,7 @@
       </div>
     </section>
 
-    <section id="shape" class="tint">
+    <section id="shape" class="band-stony">
       <div class="container shape-layout">
         <div>
           <span class="eyebrow dark">Help shape our next harvest</span>
@@ -262,43 +302,57 @@
     </section>
 
     <section id="farmers">
-      <div class="container">
-        <span class="eyebrow dark">Meet your farmers</span>
-        <h2 class="script section-title">Grown in Kranji, not flown in</h2>
-        <div class="story-grid">
-          <article class="story card">
-            <img src="assets/img/farmer-vertical-500.webp" alt="A Tyllage farmer tending greens" width="500" height="625" loading="lazy">
-            <div class="story-body">
-              <h3>Picked the morning it leaves</h3>
-              <p>We harvest on the day of delivery, so your greens spend hours, not days, getting to you.</p>
-            </div>
-          </article>
-          <article class="story card">
-            <img src="assets/img/ladybug-640.webp" alt="A ladybird on a leaf" width="640" height="427" loading="lazy">
-            <div class="story-body">
-              <h3>Ladybirds, not pesticides</h3>
-              <p>Helpful insects keep pests in check, so we can grow without pesticides.</p>
-            </div>
-          </article>
-          <article class="story card">
-            <img src="assets/img/farm-flatlay-640.webp" alt="Tyllage vegetables laid out on a table" width="640" height="427" loading="lazy">
-            <div class="story-body">
-              <h3>Visit, then cook</h3>
-              <p>Come for a farm tour, take home what you picked, and order more for the weeks after.</p>
-            </div>
-          </article>
+      <div class="container story-split">
+        <img class="story-photo" src="assets/img/farmer-vertical-500.webp" alt="A Tyllage farmer tending greens" width="500" height="625" loading="lazy">
+        <div>
+          <span class="eyebrow dark">Meet your farmers</span>
+          <h2 class="script section-title">Grown in Kranji, not flown in</h2>
+          <p>We harvest the morning your order leaves, so your greens spend hours, not days, getting to you. That's why they stay crunchy longer.</p>
+          <p>Out in the beds, ladybirds keep pests in check, so we can grow without pesticides. Technology and nature, working together.</p>
+          <ul class="story-points">
+            <li><img src="assets/img/ladybug-640.webp" alt="" width="64" height="64" loading="lazy"><span><strong>Ladybirds, not pesticides</strong> Helpful insects do the pest control.</span></li>
+            <li><img src="assets/img/farm-flatlay-640.webp" alt="" width="64" height="64" loading="lazy"><span><strong>Visit, then cook</strong> Come for a farm tour and take home what you picked.</span></li>
+          </ul>
+          <a class="btn btn-outline" href="#shape">Tell us what to grow next</a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-row">
-      <img src="assets/tyllage-logo.png" alt="Tyllage" width="98" height="44" loading="lazy">
-      <p>Tyllage · Singapore-grown vegetables, better value when your neighbourhood buys together. This is a prototype: products, prices, stock, pickups and numbers are made up for the demo and no real orders are taken.</p>
-      <p class="muted-light">© 2026 Tyllage LLP. Demo photography is placeholder imagery.</p>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="assets/tyllage-logo-white.png" alt="Tyllage" width="98" height="44" loading="lazy">
+        <p>Singapore-grown vegetables, better value when your neighbourhood buys together.</p>
+        <p class="muted-light">Delivery Tue · Thu · Sat · Free from S$60 · Or collect, no fee</p>
+      </div>
+      <nav aria-label="Shop">
+        <h3>Shop</h3>
+        <a href="#savings">Weekly savings</a>
+        <a href="#harvest">This week's harvest</a>
+        <a href="#deals">Bundles</a>
+        <a href="#collect">Group buys</a>
+      </nav>
+      <nav aria-label="Explore">
+        <h3>Explore</h3>
+        <a href="#cook">Recipes</a>
+        <a href="#next">Coming next</a>
+        <a href="#shape">Shape our harvest</a>
+        <a href="#farmers">Our farm</a>
+      </nav>
+      <nav aria-label="Account">
+        <h3>Account</h3>
+        <a href="login.html?next=index.html">Log in</a>
+        <a href="login.html">Create an account</a>
+        <a href="growth.html">Team view</a>
+      </nav>
+    </div>
+    <div class="container footer-base">
+      <p>© 2026 Tyllage LLP · Prototype: products, prices, stock, pickups and numbers are made up and no real orders are taken.</p>
+      <p>Demo photography is placeholder imagery.</p>
     </div>
   </footer>
+  <a class="to-top" href="#top" aria-label="Back to top">↑</a>
 
   <nav class="tabbar" aria-label="Quick links">
     <a href="#top" data-tab="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span>Home</span></a>
