@@ -101,6 +101,14 @@
           </form>
           <div class="recipe-list" id="recipe-list" aria-live="polite"></div>
         </div>
+        <div class="card foryou" id="foryou">
+          <div class="foryou-head">
+            <h3>Try something new</h3>
+            <p class="muted">What do you usually buy? We'll suggest a green from this week's harvest that goes with it.</p>
+            <div class="chips" id="usual-crops"></div>
+          </div>
+          <div class="foryou-out" id="foryou-out" aria-live="polite"></div>
+        </div>
       </div>
     </section>
 
@@ -202,7 +210,27 @@
     </div>
   </footer>
 
+  <button class="chat-fab" type="button" id="chat-open" aria-controls="chat" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+    <span>Ask MEOD</span>
+  </button>
+  <div class="chat" id="chat" role="dialog" aria-label="Ask MEOD" hidden>
+    <div class="chat-head">
+      <div><strong>Ask MEOD</strong><span>Answers from MEOD's approved info · prototype</span></div>
+      <button type="button" class="chat-close" id="chat-close" aria-label="Close chat">×</button>
+    </div>
+    <div class="chat-log" id="chat-log" aria-live="polite"></div>
+    <div class="chat-suggest" id="chat-suggest"></div>
+    <form class="chat-form" id="chat-form">
+      <label for="chat-input" class="sr-only">Your question</label>
+      <input id="chat-input" autocomplete="off" maxlength="300" placeholder="Ask about this week's harvest, pickups…">
+      <button class="btn btn-sm btn-forest" type="submit">Send</button>
+    </form>
+    <p class="chat-note">Please don't share phone numbers or addresses. Anything like that is removed before it's saved.</p>
+  </div>
+
   <script src="js/data.js"></script>
+  <script src="js/intel.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/site.js"></script>
 </body>

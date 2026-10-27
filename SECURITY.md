@@ -50,6 +50,11 @@ Only the latest commit on `main` is maintained.
 | AI | Rule-based mock. Nothing is sent to an AI service. Suggestions need a person to act | OpenAI project key with spend limits; send minimum fields; redact PII; AI never posts, messages customers, changes prices or changes planting |
 | Social publishing | None. Drafts are copied by hand; approving posts nothing | Official platform APIs with MEOD-owned tokens, approval enforced on the server, audit log |
 | Third-party scripts | None. Only Google Fonts stylesheets | Pin and add `integrity` hashes to any script added later |
+| Ask MEOD assistant | Keyword retrieval over a fixed approved FAQ plus demo data. Phone numbers, emails and full postal codes are removed before a question is saved to `localStorage`. Complaints, refunds, health and bulk orders are always handed to staff | RAG only over approved content, scoped answers, prompt-injection testing, rate limits, a PDPA notice at the start of the chat, retention period for transcripts, staff hand-over on MEOD's authorised channel |
+| Search Console import | CSV read in the browser (2 MB cap, 2,000 rows), kept in memory only, never saved or sent | Search Console API with MEOD's OAuth consent, read-only scope, tokens only on the backend |
+| Customer analytics | 80 synthetic, pseudonymous customers. Segments and churn signals are suggestions; customers without consent are never messaged | Run on the server with role-based access; staff see pseudonymous IDs; consent checked at send time; a person decides every message |
+| Neighbourhood data | Breakdowns for fewer than 5 households are shown as "<5"; no addresses anywhere | Keep the small-group threshold on the server; never expose individual addresses or leader contact details |
+| Farm stories | Only facts from approved farm records; every fact must be ticked as verified | Records come from authenticated farm staff; verification and approval logged |
 
 ## Secrets for the production build
 
@@ -87,3 +92,6 @@ This repository is proprietary. Tyllage does not support, and has not authorised
 - Don't add third-party scripts without a review. Pin an exact version, load it only where it's needed, and add an `integrity` hash.
 - Keep AI features advisory: they may draft or suggest, but a person approves anything that is posted, sent to customers, or changes prices or planting.
 - Store the least data possible. Keep only the postal sector, never a full address, and never collect contact details in the prototype.
+- Anything typed by visitors (Ask MEOD) goes through `MEOD.redact()` before it is saved.
+- Never show a breakdown for fewer than `MEOD.MIN_GROUP` (5) households.
+- Never import real Search Console, customer or order exports into the public demo.

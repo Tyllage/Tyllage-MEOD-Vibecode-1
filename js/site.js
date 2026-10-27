@@ -182,7 +182,78 @@
     toast("Thanks! The farm will count this. It's not an order.");
   });
 
+  /* ---------- try something new (content-based recommendations) ---------- */
+  const usual = document.getElementById("usual-crops");
+  usual.replaceChildren(...M.CROPS.map((c) =>
+    h("label", { class: "chip" }, h("input", { type: "checkbox", name: "usual", value: c.id }), " " + c.name)));
+
+  function renderForYou() {
+    const liked = [...usual.querySelectorAll("input:checked")].map((i) => i.value);
+    const out = document.getElementById("foryou-out");
+    if (!liked.length) { out.replaceChildren(h("p", { class: "muted" }, "Pick one or more to see a suggestion.")); return; }
+    const prefs = new FormData(cookForm).getAll("pref");
+    const top = M.recommendFor(liked, prefs).slice(0, 2);
+    if (!top.length) { out.replaceChildren(h("p", { class: "muted" }, "You already buy everything we have this week!")); return; }
+    out.replaceChildren(...top.map((r) => h("article", { class: "rec" },
+      h("h4", null, r.c.name, " ", h("span", { class: "zh", lang: "zh" }, r.c.zh)),
+      h("p", null, r.reason),
+      r.recipe ? h("p", { class: "muted" }, "Try: " + r.recipe.title + " (" + r.recipe.mins + " min)") : null,
+      h("a", { class: "btn btn-sm btn-gold", target: "_blank", rel: "noopener",
+        href: M.utm("tyllage", "landing-page", "this-week-at-meod", "foryou-" + r.c.id),
+        onclick: () => M.track("rec_click", r.c.id) }, "Add " + r.c.name + " ↗"))));
+  }
+  usual.addEventListener("change", renderForYou);
+  cookForm.addEventListener("change", renderForYou);
+
+  /* ---------- Ask MEOD assistant ---------- */
+  const chat = document.getElementById("chat");
+  const chatLog = document.getElementById("chat-log");
+  const chatOpen = document.getElementById("chat-open");
+  const chatInput = document.getElementById("chat-input");
+  const SUGGEST = ["What's fresh this week?", "Pickup near 820123", "How do I cook Kai Lan?", "Do you use pesticides?", "My order was missing items"];
+
+  function bubble(who, ...kids) {
+    chatLog.append(h("div", { class: "msg " + who }, kids));
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+  function ask(q) {
+    if (!q.trim()) return;
+    bubble("me", q);
+    const a = M.answer(q);
+    const safe = M.redact(q).slice(0, 300);
+    if (a.escalate) M.state.inbox.push({ kind: "ticket", text: safe, at: new Date().toISOString(), status: "Open" });
+    if (a.intent) M.state.inbox.push({ kind: "intent", text: safe, crop: a.intent.crop, qty: a.intent.qty, at: new Date().toISOString() });
+    if (!a.escalate && !a.intent) M.state.inbox.push({ kind: "question", text: safe, answered: a.sources.length > 0, at: new Date().toISOString() });
+    if (M.state.inbox.length > 300) M.state.inbox = M.state.inbox.slice(-300);
+    M.save();
+    M.track("assistant", a.escalate ? "escalated" : a.sources.length ? "answered" : "unanswered");
+    bubble("bot",
+      a.parts.map((p) => h("p", null, p)),
+      a.links.map((l) => h("a", { class: "btn btn-sm btn-gold", href: l.href, target: "_blank", rel: "noopener" }, l.label)),
+      a.sources.length ? h("p", { class: "src" }, "Source: " + a.sources.join(" · ")) : null);
+  }
+  function setChat(open) {
+    chat.hidden = !open;
+    chatOpen.setAttribute("aria-expanded", String(open));
+    chatOpen.hidden = open;
+    if (open) {
+      if (!chatLog.children.length) bubble("bot", h("p", null, "Hi! I'm MEOD's assistant. I can tell you what's being harvested, find a group-buy pickup and suggest recipes."));
+      chatInput.focus();
+    } else chatOpen.focus();
+  }
+  chatOpen.addEventListener("click", () => setChat(true));
+  document.getElementById("chat-close").addEventListener("click", () => setChat(false));
+  chat.addEventListener("keydown", (e) => { if (e.key === "Escape") setChat(false); });
+  document.getElementById("chat-suggest").replaceChildren(...SUGGEST.map((s) =>
+    h("button", { type: "button", class: "chip", onclick: () => ask(s) }, s)));
+  document.getElementById("chat-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    ask(chatInput.value);
+    chatInput.value = "";
+  });
+
   renderHarvest();
   renderRecipes();
+  renderForYou();
   renderInterestSummary();
 })();

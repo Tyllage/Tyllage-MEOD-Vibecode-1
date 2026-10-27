@@ -200,13 +200,15 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) { /* storage blocked: fall through to defaults */ }
-    return { rules: {}, interests: [], events: [], drafts: [] };
+    return { rules: {}, interests: [], events: [], drafts: [], inbox: [], decisions: [] };
   }
   let state = load();
   state.rules = state.rules || {};
   state.interests = state.interests || [];
   state.events = state.events || [];
   state.drafts = state.drafts || [];
+  state.inbox = state.inbox || [];
+  state.decisions = state.decisions || [];
 
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
@@ -221,16 +223,17 @@
   }
 
   function reset() {
-    state = { rules: {}, interests: [], events: [], drafts: [] };
+    state = { rules: {}, interests: [], events: [], drafts: [], inbox: [], decisions: [] };
     save();
   }
 
   /* ---------- intelligence (rule-based, explainable) ---------- */
 
-  // Which crops the consumer page should feature: ones with enough uncommitted harvest to sell.
+  // Which crops the consumer page should feature: ones with enough uncommitted harvest to sell,
+  // and never one under the Margin Guard floor (promoting it would grow the loss).
   function featuredCrops() {
     const R = rules();
-    return CROPS.filter((c) => uncommittedKg(c) / c.expected > R.noPromoUncommitted)
+    return CROPS.filter((c) => uncommittedKg(c) / c.expected > R.noPromoUncommitted && margin(c) >= R.minMargin)
       .sort((a, b) => uncommittedKg(b) / b.expected - uncommittedKg(a) / a.expected);
   }
 
@@ -374,14 +377,39 @@
     };
   }
 
-  function drafts(c, rec) {
+  // Campaign drafts from real farm information. angle: "recipe" | "story" | "bundle".
+  // Templates today; an LLM could vary the wording later, using only these same facts.
+  function drafts(c, rec, angle) {
     const link = rec.link;
     const recipe = RECIPES.find((r) => r.crop === c.id);
     const dish = recipe ? recipe.title : c.name;
+    const mins = recipe ? recipe.mins : 15;
+    const pickup = rec.where ? ` for our ${rec.where.area} pickup (${rec.where.day} ${rec.where.window})` : "";
+    const A = {
+      recipe: {
+        hook: `"Dinner in ${mins} minutes, straight from a Kranji farm."`,
+        body: `This week try: ${dish}, ready in ${mins} minutes.`,
+        shots: [`picking ${c.name} at sunrise`, "wok, garlic, 60 seconds", `plated ${dish}`],
+        cta: "Get the recipe and the greens"
+      },
+      story: {
+        hook: `"This was in the ground yesterday."`,
+        body: `Our growers pick ${c.name} the morning it leaves the farm, without pesticides.`,
+        shots: [`a grower walking the ${c.name} rows`, "close-up of leaves with morning dew", "packing the harvest the same morning"],
+        cta: "Meet the farm behind your greens"
+      },
+      bundle: {
+        hook: `"Never cooked ${c.name}? Start here."`,
+        body: `New to ${c.name}? Our starter bundle pairs it with another green from this week's harvest${/bundle/i.test(rec.offer) ? " (bundle price approved by MEOD)" : ""}.`,
+        shots: [`unboxing the starter bundle`, `${c.name} vs the other green side by side`, `one quick dish: ${dish}`],
+        cta: "Try the starter bundle"
+      }
+    }[angle || "recipe"];
     return [
-      { channel: "Instagram", text: `Harvesting ${c.name} (${c.zh}) on ${c.harvestDay} 🌱 Grown at MEOD in Kranji, Singapore.\n\nThis week try: ${dish} — ready in ${recipe ? recipe.mins : 15} minutes.\n\nOrder on MEOD Fresh (link in bio). Delivery ${OFFERS.deliveryDays}.` },
-      { channel: "TikTok", text: `Hook (0–2s): "This was in the ground yesterday."\nShot 1: picking ${c.name} at sunrise.\nShot 2: wok, garlic, 60 seconds.\nShot 3: plated ${dish}.\nCaption: Singapore-grown ${c.name}. Order link in bio.` },
-      { channel: "WhatsApp (leader)", text: `Hi neighbours! MEOD is harvesting fresh ${c.name} this ${c.harvestDay}${rec.where ? ` for our ${rec.where.area} pickup (${rec.where.day} ${rec.where.window})` : ""}. Easy idea: ${dish}. Order here: ${link}\nReply STOP to opt out.` }
+      { channel: "Instagram", text: `Harvesting ${c.name} (${c.zh}) on ${c.harvestDay} 🌱 Grown at MEOD in Kranji, Singapore.\n\n${A.body}\n\n${A.cta}: order on MEOD Fresh (link in bio). Delivery ${OFFERS.deliveryDays}.` },
+      { channel: "Facebook", text: `${A.body}\n\nGrown at MEOD Farm in Kranji, Singapore, and harvested on ${c.harvestDay}. Order on MEOD Fresh for delivery ${OFFERS.deliveryDays}, or collect from a neighbourhood group buy.\n\n${A.cta} → ${link}` },
+      { channel: "TikTok / Reels", text: `Hook (0–2s): ${A.hook}\n${A.shots.map((s, i) => `Shot ${i + 1}: ${s}.`).join("\n")}\nOn-screen text: Singapore-grown ${c.name}.\nCaption: ${A.cta}. Link in bio.` },
+      { channel: "WhatsApp (leader)", text: `Hi neighbours! MEOD is harvesting fresh ${c.name} this ${c.harvestDay}${pickup}. ${A.body} Order here: ${link}\nReply STOP to opt out.` }
     ];
   }
 

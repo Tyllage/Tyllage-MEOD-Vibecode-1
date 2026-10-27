@@ -8,8 +8,27 @@ Most farms work **grow → find buyers → sell**. This prototype tries part of 
 
 It has two parts:
 
-1. **Consumer page (`index.html`): *This Week at MEOD*.** A MEOD-branded, mobile-first page that shows this week's harvest, suggests recipes using only produce that's actually available, finds the nearest **group-buy collection point** from a postal code, and lets households tell the farm what they'd buy regularly (*Help shape our next harvest*). Every store link is UTM-tagged so MEOD Fresh can attribute visits.
-2. **Farm view (`growth.html`): *Growth Intelligence Hub*.** Seven tabs for MEOD staff: Overview, **Campaign Studio**, **SEO**, **Customers**, **Collection points**, **Demand → Planting** and **Settings**.
+1. **Consumer page (`index.html`): *This Week at MEOD*.** A MEOD-branded, mobile-first page that shows this week's harvest, suggests recipes using only produce that's actually available, recommends a new green based on what you usually buy, finds the nearest **group-buy collection point** from a postal code, lets households tell the farm what they'd buy regularly (*Help shape our next harvest*), and has an **Ask MEOD** assistant. Every store link is UTM-tagged so MEOD Fresh can attribute visits.
+2. **Farm view (`growth.html`): *Growth Intelligence Hub*.** Eleven tabs for MEOD staff: Overview, **Strategy**, **Campaign Studio**, **Experiments**, **Farm stories**, **SEO**, **Customers**, **Neighbourhoods**, **Demand → Planting**, **Inbox** and **Settings**.
+
+The goal isn't more views, likes or followers. It's more **paying customers**, **recurring demand**, and **better decisions about how much to grow**. All ten AI features below serve that.
+
+## The 10 AI features
+
+| # | Feature | In this prototype | Next, with real data | Where |
+|---|---|---|---|---|
+| 1 | **Growth Strategy Advisor** | Ranks moves (expand to a similar area, production trial, fix a leaky pickup, shift budget, win back customers, fix margin). Each explanation is written only from the figures listed under *Evidence* | LLM explanations grounded in the same verified analytics | Strategy |
+| 2 | **Social Media Campaign Studio** | Suggests objective, audience, channel, timing and kg cap; drafts Instagram, Facebook, TikTok/Reels and WhatsApp posts for three angles (recipe, farm story, intro bundle) with caption checks; approval queue | LLM drafts from the same farm data; results fed back into suggestions | Campaign Studio |
+| 3 | **SEO & Search Opportunity Advisor** | Clusters search queries by topic and flags high-opportunity clusters; content gaps; outlines a useful page from approved facts; imports a Search Console CSV in the browser | Search Console API with MEOD's authorisation; AI-assisted page prose | SEO |
+| 4 | **Customer Segmentation & Churn** | RFM segments (Champions, Loyal, New, Needs attention, At risk, Hibernating); "likely lapsing" when a customer is 1.5× past *their own* usual gap; consent-aware next step | Predictive churn model once there are 6+ months of purchases | Customers |
+| 5 | **Demand-to-Planting Forecaster** | Trend forecast with an 80% range and a backtest; forecast confidence; trial size; "grow something different?" crop-mix check | Seasonal time-series model on full sales and group-buy orders, scored weekly | Demand → Planting |
+| 6 | **Personalised Vegetable & Recipe Recommender** | Content-based: cooking style, taste and spare harvest; only crops that are available and pass Margin Guard; a matching recipe | Order-history personalisation; collaborative filtering later | Consumer page → *Try something new* |
+| 7 | **Neighbourhood Demand Intelligence** | Opportunity score (0–100), area types (Growing & loyal, Untapped, Leaky, Saturated, Stable), crop mix per pickup with groups under 5 hidden, interest without a pickup | Clustering on purchase patterns; per-area forecasts | Neighbourhoods |
+| 8 | **Campaign Experiment Optimiser** | Extra orders over the usual and extra contribution per campaign; two-proportion z-tests; a sample-size planner for the next test | Holdout groups for true incremental orders; adaptive budget allocation | Experiments |
+| 9 | **Customer Engagement Assistant** | *Ask MEOD*: keyword retrieval over approved FAQ plus live harvest, recipe and pickup data; logs purchase intent; hands complaints, refunds, health and bulk orders to staff; removes phone numbers, emails and full postal codes | Retrieval-augmented generation on MEOD's authorised chat channels, same hand-over rules | Consumer page, Inbox |
+| 10 | **Farm Storytelling Assistant** | Drafts from approved farm records only, in three tones; every fact must be ticked as verified before it can go for approval | LLM storytelling from the same records, with the fact checklist kept | Farm stories |
+
+Everything is rule-based and runs in the browser. Nothing is sent to an AI service, nothing is posted or messaged, and a person approves every action.
 
 Built with plain **HTML, CSS and vanilla JavaScript**. There's no framework, no build step and no backend.
 
@@ -52,11 +71,14 @@ Every push to `main` redeploys automatically.
 | Section | What's on it |
 |---|---|
 | **Hero** | "Fresh from the farm. Made for your table." with the current week, plus delivery facts (Tue / Thu / Sat, free from S$60, or collect from a group buy) |
-| **This week's harvest** | Crop cards chosen by Tyllage: only crops with enough **uncommitted** harvest to sell, most spare first. Each shows harvest day, kg still available, *Buy on MEOD Fresh ↗* (tracked link) and *Recipes* |
+| **This week's harvest** | Crop cards chosen by Tyllage: only crops with enough **uncommitted** harvest to sell and a margin above the Margin Guard floor, most spare first. Each shows harvest day, kg still available, *Buy on MEOD Fresh ↗* (tracked link) and *Recipes* |
+| **Try something new** | Tick what you usually buy; get up to two other greens from this week's harvest that cook the same way but taste different, with a recipe and a tracked link |
 | **What should I cook?** | Household size, time to cook and preferences (vegetarian, kid-friendly, no spicy). Recipes are filtered to crops available this week, ranked by spare harvest, and scaled to the household ("about 250 g Nai Bai for 1–2 people"). Each links to the product on MEOD Fresh |
 | **Collect from a neighbour** | Enter a 6-digit postal code to see the 3 nearest group-buy pickups (area, distance, day, window, order cutoff). If none is within 3 km, it asks you to register interest instead. *Ask to join* is simulated: nothing is sent |
 | **Help shape our next harvest** | Pick crops, frequency and pickup or delivery; optional postal code; a consent tick. Clearly labelled *not an order*. Only the postal **sector** (first two digits) is stored. A bar list shows what neighbours have asked for (demo numbers plus yours) |
 | **Meet your farmers** | Three short farm stories with MEOD's photos |
+
+The **Ask MEOD** button (bottom right) opens the assistant. Try *What's fresh this week?*, *Pickup near 820123*, *I want to buy 2kg Nai Bai* or *My order was missing items*, then look at the hub's **Inbox**.
 
 The **Farm view** button in the nav opens the hub. The footer and a top bar say plainly that this is a prototype and not MEOD's live site.
 
@@ -64,13 +86,17 @@ The **Farm view** button in the nav opens the hub. The footer and a top bar say 
 
 | Tab | What it does |
 |---|---|
-| **Overview** | Greeting band with this week's headline, KPI tiles (campaign visits, first-time buyers, came back within 28 days, repeat-backed demand in kg/week), **This week's top actions** (planting trials, margin problems, retention risks, full pickups, campaigns, SEO gaps), the **attention → dependable demand** funnel, a Demand → Planting summary, and **From this browser**: live counts of what you did on the consumer page |
-| **Campaign Studio** | Pick a crop. Tyllage suggests the objective, audience, channel, theme, offer, maximum kg to promote, posting window and how to measure it, with a tracked link and a **Why?** panel. Editable **Instagram, TikTok and WhatsApp (leader)** drafts with live caption checks. **Submit for MEOD approval** puts it in an approval queue; approving never posts anything. Also: the **recipe vs discount experiment**, a **tracked link builder** and **channel results** |
-| **SEO** | Candidate search topics (e.g. *nai bai recipe*, *vegetable group buy near me*) with intent, which MEOD page answers it, status (has page / weak page / no page) and a suggestion. A **page title & description checker**. Search volumes are explicitly *not verified* |
-| **Customers** | New, Returning, At risk and Inactive groups with a suggested next step for each (consent respected), new buyers by channel, and the harvest-interest answers from this browser |
-| **Collection points** | Every pickup with an 8-week sparkline, households vs capacity, 4-week trend, returning share, a status (Growing, Near capacity, Room to grow, Retention risk, Steady) and a suggested action. **Interest without a pickup nearby** shows where to look for a new leader |
-| **Demand → Planting** | Per crop: expected, committed (trade, group buy, pre-order) and what's left for new consumer demand; a bar chart of **paid orders per week** against available supply; a chart of the **returning-buyer share**; and **Tyllage's read** with the reasoning. *Accept* / *Not now* are logged; Tyllage never changes a planting plan |
-| **Settings** | Edit every decision threshold (saved in the browser), a table of what's rule-based today vs future, and **Reset demo data** |
+| **Overview** | Greeting band, KPI tiles (campaign visits, first-time buyers, came back within 28 days, repeat-backed demand in kg/week), the top 5 **Strategy** recommendations, the **attention → dependable demand** funnel, a Demand → Planting summary with forecast confidence, and **From this browser**: live counts of what you did on the consumer page |
+| **Strategy** | Every growth recommendation, ranked, with impact, effort, the evidence behind it and *Plan it* / *Dismiss* |
+| **Campaign Studio** | Pick a crop. Tyllage suggests the objective, audience, channel, theme, offer, maximum kg to promote, posting window and how to measure it, with a tracked link and a **Why?** panel. Pick an angle (recipe, farm story, intro bundle) for editable **Instagram, Facebook, TikTok/Reels and WhatsApp (leader)** drafts with live caption checks. **Submit for MEOD approval** puts it in the approval queue; approving never posts anything. Plus a **tracked link builder** |
+| **Experiments** | Each campaign's extra orders over the usual and extra contribution after costs; the **recipe vs discount** test with significance checks; a **planner** for the next test (approaches, buyers needed per approach, weeks at recent pace, past results per approach) |
+| **Farm stories** | Pick an approved farm record (harvest, pest control, planting, weather), choose a tone, get Instagram/Facebook, blog and WhatsApp drafts. *Send for approval* unlocks only when every fact is ticked as verified |
+| **SEO** | Search queries grouped into topic clusters with impressions, clicks, CTR, position and opportunity; **Import Search Console CSV**; content gaps; **Draft a useful page** (an outline built from approved facts); a **page title & description checker**. Demo search volumes are made up |
+| **Customers** | RFM segments with a next step for each; **likely lapsing** customers with a consent-aware suggestion and channel; new buyers by channel; harvest-interest answers from this browser |
+| **Neighbourhoods** | Area types; every pickup with an 8-week sparkline, households vs capacity, trend, returning share, **opportunity score**, type and suggested action; **what each area buys** (groups under 5 shown as "<5"); **interest without a pickup nearby** |
+| **Demand → Planting** | Per crop: expected, committed and what's left for consumer demand; **paid orders with a 4-week forecast** (80% range) against available supply; the **returning-buyer share**; **Tyllage's read** with forecast confidence and reasoning; **Grow more, or grow something different?**; all crops. *Accept* / *Not now* are logged; Tyllage never changes a planting plan |
+| **Inbox** | What customers asked *Ask MEOD*: questions handed to staff (mark resolved), purchase intent by crop, and questions it couldn't answer (candidates for new FAQ answers or pages) |
+| **Settings** | Edit every decision threshold (saved in the browser), what each of the 10 AI features does today vs next, and **Reset demo data** |
 
 ### How Demand → Planting decides
 
@@ -94,20 +120,11 @@ The demo crops are set up so each verdict appears at least once (Nai Bai → tes
 - **Offer:** normal price, unless more than half the harvest is uncommitted; then a 10% bundle **only if** it passes Margin Guard.
 - **Cap:** never promote more than the uncommitted kg, so confirmed orders are protected.
 
-### AI-assisted features
+### How every AI-assisted feature behaves
 
-Every AI-assisted feature carries the same **AI-assisted** pill and a **Why?** panel. All of them are **rule-based** in the prototype: they read the demo records, show how they reached an answer, and never post, message, change prices or change planting on their own. A person always approves.
+Every AI-assisted screen carries the same **AI-assisted** pill, a **Why?** or **Evidence** panel, and a short **Now / With real data** note saying what it does today and what would change with MEOD's real data or an LLM. All of them are rule-based in the prototype: they read the demo records, show how they reached an answer, say so when the data can't answer, and never post, message, change prices or change planting on their own. A person always approves.
 
-| Part | How it works | Status |
-|---|---|---|
-| Featured crops and consumer supply | Calculation: expected − committed | Now |
-| Demand → Planting verdict | Explainable rules on paid demand, repeat share and margin | Now |
-| Campaign suggestion | Rules + recorded campaign results | Now |
-| Post drafts | Editable templates with caption checks | Now |
-| Recipe ranking | Filters and a simple score on spare harvest | Now |
-| Attribution | UTM-tagged links; real numbers need MEOD Fresh / Shopify analytics | Needs integration |
-| Writing drafts with a language model | Optional LLM; MEOD approves every post | Future |
-| Demand forecasting | Model trained on MEOD's real order history | Future, once there's enough data |
+Evidence is ranked: **paid repeat orders > paid first orders > registered interest or purchase intent > visits > likes.**
 
 ### Business rules (illustrative — MEOD to confirm)
 
@@ -134,37 +151,43 @@ js/data.js        demo data (crops, recipes, collection points, campaigns, SEO t
                   segments), RULES, localStorage state, tracking, and the decision logic:
                   featuredCrops, plantingVerdict, pointStatus, campaignStats,
                   recommendCampaign, drafts, captionChecks, nearestPoints
+js/intel.js       intelligence engine: forecasts + backtest, crop mix, RFM + churn signals,
+                  recommender, campaign impact + z-tests + sample sizes, neighbourhood
+                  scoring, growth strategy, Ask MEOD retrieval + redaction, farm stories,
+                  search clustering + CSV import, SEO page outlines (plus their demo data)
 js/ui.js          h() / s() DOM helpers (textContent only), toast, copy, AI pill
-js/site.js        consumer page
-js/growth.js      farm view: tabs, charts, tables, approvals, settings
+js/site.js        consumer page, Try something new, Ask MEOD widget
+js/growth.js      farm view: 11 tabs, charts, tables, approvals, settings
 
 assets/           MEOD logo (SVG)
 assets/img/       optimised WebP photos and favicon
 .nojekyll         serve files as-is on GitHub Pages
 ```
 
-**Script order:** `data.js → ui.js → site.js` on `index.html`, and `data.js → ui.js → growth.js` on `growth.html`.
+**Script order:** `data.js → intel.js → ui.js → site.js` on `index.html`, and `data.js → intel.js → ui.js → growth.js` on `growth.html`.
 
 **No third-party scripts.** The only external request is Google Fonts (Caveat Brush and Figtree). Charts are hand-drawn SVG.
 
 ## Demo data
 
-- Stored in `localStorage` under `tyllage-growth-demo-v1`: harvest-interest answers, consumer-page activity, campaign drafts, planting decisions and edited thresholds. Each browser has its own copy.
+- Stored in `localStorage` under `tyllage-growth-demo-v1`: harvest-interest answers, consumer-page activity, *Ask MEOD* questions (contact details removed), campaign and story drafts, strategy and planting decisions, and edited thresholds. An imported Search Console CSV is kept in memory only and is gone when you leave the tab. Each browser has its own copy.
 - The rest (crops, campaigns, collection points, segments) is fixed in `js/data.js`.
 - **Reset:** **Settings → Reset demo data** in the farm view, or clear the site's storage.
-- **Try the loop:** on the consumer page, search a postal code and fill in *Help shape our next harvest*. Then open the farm view: **Overview → From this browser**, **Customers** and **Collection points** pick it up.
+- **Try the loop:** on the consumer page, search a postal code, fill in *Help shape our next harvest* and ask *Ask MEOD* a few questions. Then open the farm view: **Overview → From this browser**, **Customers**, **Neighbourhoods** and **Inbox** pick it up.
 
 ## Responsive breakpoints
 
 | Width | What changes |
 |---|---|
-| ≤ 1000 px | Campaign drafts stack |
+| ≤ 1100 px | Campaign and story drafts go two-up |
+| ≤ 860 px (consumer) | *Try something new* stacks |
 | ≤ 960 px | Consumer nav collapses to a menu button |
 | ≤ 860 px | Two-column sections stack; KPI tiles go 2 × 2 |
+| ≤ 700 px | Drafts go one column |
 | ≤ 640 px | Hub tables become labelled cards |
 | ≤ 520 px | *Farm view* button hides from the consumer nav; postal form stacks |
 
-Checked at 375 px and 1280 px with no sideways scrolling on every tab (27 Oct 2026).
+Checked at 375 px, 534 px and 1280 px with no sideways scrolling and no console errors on every tab and the consumer page, including the Ask MEOD panel (27 Oct 2026).
 
 ## Path to production
 
@@ -176,6 +199,9 @@ Checked at 375 px and 1280 px with no sideways scrolling on every tab (27 Oct 20
 | Collection points | Group-buy module data (leaders, pickups, orders), shared with leaders' agreement |
 | SEO topics | Google Search Console data for MEOD's own site |
 | Drafts and approvals | Server-side approvals with roles; optional publishing through official social APIs later |
+| Ask MEOD keyword retrieval | RAG over the same approved FAQ and live data, on MEOD's authorised chat channels |
+| Trend forecast, RFM cut-offs, z-tests | Models fitted and scored on MEOD's real history; holdout groups for experiments |
+| Farm records in `FARM_LOG` | Greenhouse round records from Tyllage's farm-ops data |
 | Open farm view | Server-side sign-in and role checks |
 
 See [audit.md](audit.md) for the gap list and the questions to validate with MEOD before building further.

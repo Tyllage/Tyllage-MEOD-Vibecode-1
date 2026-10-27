@@ -26,12 +26,22 @@ This audit checks the prototype against the B2C growth concept (*Demand Growth I
 | Margin Guard on any offer and on growth | `plantingVerdict()`, `recommendCampaign()` | ✅ |
 | Protect committed orders | Campaign cap = uncommitted kg | ✅ |
 | Measure purchases and repeat, not likes | Funnel, channel results | ✅ |
+| **1. Growth Strategy Advisor** | `growth.html#strategy`, `strategy()` | ✅ Ranked, evidence-backed; Plan it / Dismiss logged |
+| **2. Social Campaign Studio** (Instagram, Facebook, TikTok, WhatsApp; angles; CTAs; audiences) | Campaign Studio, `drafts()` | ✅ Templates; approval queue |
+| **3. SEO clustering and AI-assisted page drafts** | SEO, `clusterSearch()`, `pageDraft()`, `parseSearchCsv()` | ⚠️ Demo export; CSV import works; no API |
+| **4. Segmentation and churn** | Customers, `rfm()`, `reengage()` | ⚠️ RFM + overdue rule; no predictive model yet (needs history) |
+| **5. Demand-to-Planting forecasting with uncertainty** | Demand → Planting, `forecast()`, `forecastRead()`, `cropMix()` | ⚠️ Linear trend + 80% range + 2-week backtest; no seasonality |
+| **6. Personalised recommender** | Consumer page → Try something new, `recommendFor()` | ✅ Content-based; no order history yet |
+| **7. Neighbourhood demand intelligence** | Neighbourhoods, `neighbourhood()` | ✅ Scores, types, small-group suppression |
+| **8. Experiment optimiser** | Experiments, `campaignImpact()`, `compare()`, `sampleSize()` | ⚠️ Baseline = weeks before; no holdout groups |
+| **9. Engagement assistant** | Consumer page → Ask MEOD, Inbox, `answer()`, `redact()` | ✅ Keyword retrieval + live data + hand-over; not an LLM |
+| **10. Farm storytelling** | Farm stories, `story()`, `FARM_LOG` | ✅ Fact checklist gates approval |
 | Automated publishing | — | ❌ Deliberately out of scope |
 | Subscription / recurring billing | — | ❌ Deliberately out of scope until demand is shown |
 
 ## 2. What is simulated
 
-- All crops, harvests, commitments, paid demand, repeat shares, campaigns, collection points, segments and SEO topics are **made up** in `js/data.js`.
+- All crops, harvests, commitments, paid demand, repeat shares, campaigns, collection points, segments and SEO topics are **made up** in `js/data.js`. The 80 customers, farm records, approved FAQ, search export and campaign baselines are **made up** in `js/intel.js`.
 - The "From this browser" numbers are real, but only for the current browser.
 - *Ask to join* a pickup, campaign approvals and planting decisions are recorded locally and go nowhere.
 - Delivery days, the S$60 free-delivery threshold and the 10pm cutoff come from MEOD Fresh's public site and the earlier prototype; MEOD to confirm.
@@ -55,10 +65,14 @@ This audit checks the prototype against the B2C growth concept (*Demand Growth I
 - The planting verdict ignores seed lead time, greenhouse space and yield risk. Those stay with the farm manager.
 - Contribution uses a fixed 55% cost ratio for campaigns. Replace with real costs.
 - Postal lookup is by district centre. A real version would use OneMap and real pickup addresses.
+- The forecast is a straight-line trend. It can't see seasons or festivals and will overshoot a crop whose growth flattens. The backtest error is shown so staff can judge it.
+- Experiment "extra orders" compares with the weeks before each campaign, not a holdout group, so it can't separate a campaign from a trend.
+- RFM cut-offs are fixed numbers; they should be set from MEOD's real order distribution.
+- *Ask MEOD* matches keywords. It will miss questions phrased differently; the Inbox lists them so the approved FAQ can grow.
 
 ## 4. Responsive check
 
-Checked on 27 Oct 2026 at 375 px (phone) and 1280 px (desktop): every hub tab and the consumer page, no horizontal scrolling, no console errors. Hub tables become labelled cards under 640 px.
+Checked on 27 Oct 2026 at 375 px (phone), 534 px and 1280 px (desktop): all 11 hub tabs, the consumer page and the Ask MEOD panel, no horizontal scrolling, no console errors. Hub tables become labelled cards under 640 px.
 
 ## 5. Questions to validate with MEOD
 
@@ -72,6 +86,8 @@ Checked on 27 Oct 2026 at 375 px (phone) and 1280 px (desktop): every hub tab an
 8. Are leaders comfortable with MEOD contacting their members directly?
 9. Who at MEOD approves posts and offers, and which channels does MEOD already run?
 10. Can Tyllage get read access to MEOD Fresh (Shopify) analytics and Google Search Console?
+11. Which questions should *Ask MEOD* answer, and who at MEOD approves its answers and takes hand-overs?
+12. Who records greenhouse updates today, and would growers be happy for approved updates to become public stories?
 
 ## 6. Suggested first experiment
 
