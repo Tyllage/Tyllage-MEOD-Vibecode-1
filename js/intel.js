@@ -344,6 +344,24 @@
       impact: "Stops losses on extra volume", effort: "Medium", href: "#demand/" + c.id
     }));
 
+    // From the customer journey and feedback (insights.js), when loaded.
+    if (M.journey) M.journey().anomalies.forEach((a) => recs.push({
+      kind: "Convert", tone: "bad", score: 80,
+      title: `Fix the checkout drop for ${a.band.replace(/^Cart/, "carts")}`,
+      text: `Fewer ${a.band.replace(/^Cart/, "carts")} finish checkout: ${M.pct(a.now)} in the last 2 weeks vs ${M.pct(a.mean)} before, about ${a.lostOrders} orders a week. ${a.note}. Offer group-buy pickup before checkout rather than buying more traffic.`,
+      evidence: [`"${a.from}" → "${a.step}": ${M.pct(a.mean)} → ${M.pct(a.now)} (Customer journey)`, "Carts of S$60+ unchanged"],
+      impact: `About ${a.lostOrders} orders/week`, effort: "Low", href: "#journey"
+    }));
+    if (M.feedback) {
+      const t = M.feedback().themes.find((x) => x.barrier && x.neg >= 3);
+      if (t) recs.push({
+        kind: "Barrier", tone: "warn", score: 58,
+        title: `Remove a barrier: ${t.label.toLowerCase()}`,
+        text: `${t.count} pieces of feedback mention ${t.label.toLowerCase()}, ${t.neg} negatively. ${t.action}`,
+        evidence: t.hits.slice(0, 3).map((f) => `"${f.text}" (${f.source})`),
+        impact: "Unblocks buyers already interested", effort: "Medium", href: "#feedback"
+      });
+    }
     return recs.sort((a, b) => b.score - a.score);
   }
 

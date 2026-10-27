@@ -141,7 +141,7 @@
 
   /* ---------- helpers ---------- */
 
-  const money = (cents) => "S$" + (cents / 100).toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const money = (cents) => (cents < 0 ? "−" : "") + "S$" + (Math.abs(cents) / 100).toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const pct = (x) => Math.round(x * 100) + "%";
   const sum = (a) => a.reduce((s, x) => s + x, 0);
   const avg = (a) => (a.length ? sum(a) / a.length : 0);
@@ -200,7 +200,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) { /* storage blocked: fall through to defaults */ }
-    return { rules: {}, interests: [], events: [], drafts: [], inbox: [], decisions: [] };
+    return { rules: {}, interests: [], events: [], drafts: [], inbox: [], decisions: [], survey: [], newcrop: [], subs: [] };
   }
   let state = load();
   state.rules = state.rules || {};
@@ -209,6 +209,9 @@
   state.drafts = state.drafts || [];
   state.inbox = state.inbox || [];
   state.decisions = state.decisions || [];
+  state.survey = state.survey || [];
+  state.newcrop = state.newcrop || [];
+  state.subs = state.subs || [];
 
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
@@ -223,7 +226,7 @@
   }
 
   function reset() {
-    state = { rules: {}, interests: [], events: [], drafts: [], inbox: [], decisions: [] };
+    state = { rules: {}, interests: [], events: [], drafts: [], inbox: [], decisions: [], survey: [], newcrop: [], subs: [] };
     save();
   }
 

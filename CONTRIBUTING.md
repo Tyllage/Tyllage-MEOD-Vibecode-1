@@ -37,9 +37,11 @@ To start with fresh data, use **Farm view → Settings → Reset demo data**, or
 ## Code conventions
 
 - **Plain HTML, CSS and JavaScript.** No frameworks or bundlers unless the team agrees.
-- JS files are self-contained IIFEs. `data.js` exposes `window.MEOD` (data, rules, core decision logic, state); `intel.js` adds the intelligence engine to `window.MEOD`; `ui.js` exposes `window.UI` (DOM helpers). Load order: `data.js → intel.js → ui.js → site.js` or `data.js → intel.js → ui.js → growth.js`.
+- JS files are self-contained IIFEs. `data.js` exposes `window.MEOD` (data, rules, core decision logic, state); `intel.js` and `insights.js` add the intelligence engine to `window.MEOD`; `ui.js` exposes `window.UI` (DOM helpers). Load order: `data.js → intel.js → insights.js → ui.js → site.js` or `data.js → intel.js → insights.js → ui.js → growth.js`.
 - **Never put data into `innerHTML`.** Build DOM with `UI.h()` (and `UI.s()` for SVG), which only ever sets `textContent`.
-- **Decision logic lives in `js/data.js` and `js/intel.js`**, not in the views. Views call `plantingVerdict()`, `forecastRead()`, `strategy()`, `rfm()`, `answer()` and so on, so the logic can move to a server later.
+- **Never pass `null` to `replaceChildren()`**: it prints "null". Build the list and `.filter(Boolean)` first.
+- **Prices and promotions are deterministic.** Any offer, bundle or box goes through `orderEconomics()` and Margin Guard; AI ranks and explains, it never sets a price.
+- **Decision logic lives in `js/data.js`, `js/intel.js` and `js/insights.js`**, not in the views. Views call `plantingVerdict()`, `forecastRead()`, `strategy()`, `rfm()`, `answer()` and so on, so the logic can move to a server later.
 - **Every AI-assisted screen gets a `howNote(now, later)`** saying what it does today and what changes with real data or an LLM. An LLM may only rephrase or draft from facts Tyllage already has; it never adds figures.
 - Money is **integer cents**. Format it only with `MEOD.money()`.
 - Business rules (thresholds, rates, distances) live in `RULES` in `js/data.js`. Don't hard-code them elsewhere. If staff should be able to tune one, add it to `FIELDS` in the Settings view.
@@ -48,7 +50,7 @@ To start with fresh data, use **Farm view → Settings → Reset demo data**, or
 - **Charts:** one hue (`--forest`), one y-axis, a recessive grid, a dashed reference line where useful, and a hover/focus tooltip on every mark (`hover()` in `growth.js`). Status colours (good / warn / bad) are only for pills, and pills always carry a symbol and a word.
 - In CSS grids, use `minmax(0, 1fr)` (not `1fr`) for columns that hold tables or long text so nothing pushes the page wider than the screen.
 - Use the CSS tokens in `:root` (`--forest`, `--gold`, `--berry`, `--stony`). Don't add new colours.
-- New hub tabs go in `TABS` in `js/growth.js`. Deep links use `#tab/param` (e.g. `#demand/nai-bai`).
+- New hub pages go in `TABS` in `js/growth.js` with a `group` (`home`, `win`, `keep`, `grow`, `admin`). Deep links use `#tab/param` (e.g. `#demand/nai-bai`).
 
 ## Data rules
 

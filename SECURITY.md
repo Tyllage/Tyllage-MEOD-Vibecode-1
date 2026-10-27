@@ -55,6 +55,11 @@ Only the latest commit on `main` is maintained.
 | Customer analytics | 80 synthetic, pseudonymous customers. Segments and churn signals are suggestions; customers without consent are never messaged | Run on the server with role-based access; staff see pseudonymous IDs; consent checked at send time; a person decides every message |
 | Neighbourhood data | Breakdowns for fewer than 5 households are shown as "<5"; no addresses anywhere | Keep the small-group threshold on the server; never expose individual addresses or leader contact details |
 | Farm stories | Only facts from approved farm records; every fact must be ticked as verified | Records come from authenticated farm staff; verification and approval logged |
+| Website analytics (journey) | Synthetic funnel numbers only | Aggregated MEOD Fresh analytics with MEOD's authorisation and a cookie-consent banner; no personal data in Tyllage |
+| Reorder reminders | Suggestions only; customers without consent are never included | Consent and opt-out checked at send time; at most one reminder per order cycle; MEOD sends from its own channel |
+| Survey, new-crop reservations, weekly-box interest | Anonymous answers in `localStorage`; reservations take no payment | Reservations and any deposit handled by MEOD Fresh checkout, never by Tyllage; PDPA notice on every form |
+| Partner matcher | Pseudonymous demo partners; no follower or engagement figures are invented | Only public or partner-supplied data, with the partner's agreement; no scraping of personal profiles |
+| Pricing and promotions | Deterministic margin checks; nothing changes a real price | Price and promotion changes approved by MEOD and enforced on the server |
 
 ## Secrets for the production build
 

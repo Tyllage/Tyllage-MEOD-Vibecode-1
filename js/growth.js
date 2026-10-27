@@ -3,18 +3,32 @@
   "use strict";
   const M = window.MEOD, { h, s, aiPill, toast, copy } = window.UI;
 
+  // Grouped around the three questions: win customers, keep them, grow the farm with confidence.
+  const GROUPS = [
+    { id: "home", label: "Overview" },
+    { id: "win", label: "1 · Win customers" },
+    { id: "keep", label: "2 · Keep customers" },
+    { id: "grow", label: "3 · Grow the farm" },
+    { id: "admin", label: "Settings" }
+  ];
   const TABS = [
-    { id: "overview", label: "Overview", render: overview },
-    { id: "strategy", label: "Strategy", render: strategy },
-    { id: "campaigns", label: "Campaign Studio", render: campaigns },
-    { id: "experiments", label: "Experiments", render: experiments },
-    { id: "stories", label: "Farm stories", render: stories },
-    { id: "seo", label: "SEO", render: seo },
-    { id: "customers", label: "Customers", render: customers },
-    { id: "points", label: "Neighbourhoods", render: points },
-    { id: "demand", label: "Demand → Planting", render: demand },
-    { id: "inbox", label: "Inbox", render: inbox },
-    { id: "settings", label: "Settings", render: settings }
+    { id: "overview", group: "home", label: "Overview", render: overview },
+    { id: "strategy", group: "home", label: "Strategy", render: strategy },
+    { id: "journey", group: "win", label: "Customer journey", render: journeyView },
+    { id: "promotions", group: "win", label: "Promotions & budget", render: promotions },
+    { id: "campaigns", group: "win", label: "Campaign Studio", render: campaigns },
+    { id: "experiments", group: "win", label: "Experiments", render: experiments },
+    { id: "seo", group: "win", label: "SEO", render: seo },
+    { id: "trends", group: "win", label: "Trends & partners", render: trendsView },
+    { id: "stories", group: "win", label: "Farm stories", render: stories },
+    { id: "customers", group: "keep", label: "Customers", render: customers },
+    { id: "loyalty", group: "keep", label: "Loyalty & boxes", render: loyalty },
+    { id: "feedback", group: "keep", label: "Feedback", render: feedbackView },
+    { id: "points", group: "keep", label: "Neighbourhoods", render: points },
+    { id: "inbox", group: "keep", label: "Inbox", render: inbox },
+    { id: "demand", group: "grow", label: "Demand → Planting", render: demand },
+    { id: "newcrops", group: "grow", label: "New crops", render: newCrops },
+    { id: "settings", group: "admin", label: "Settings", render: settings }
   ];
 
   // Areas with interest but no pickup nearby (synthetic).
@@ -190,9 +204,8 @@
     const openTickets = M.state.inbox.filter((x) => x.kind === "ticket" && x.status === "Open").length;
     const stages = [
       { label: "Campaign visits", value: f.visits },
-      { label: "Interested households", value: f.interested },
       { label: "First-time buyers", value: f.first },
-      { label: "Repeat buyers", value: f.repeat }
+      { label: "Came back within 28 days", value: f.repeat }
     ];
     const ev = M.state.events;
     const evCount = (t) => ev.filter((e) => e.type === t).length;
@@ -206,6 +219,7 @@
         kpi("First-time buyers", String(f.first), M.pct(f.first / f.visits) + " of visits"),
         kpi("Came back within 28 days", String(f.repeat), M.pct(f.repeat / f.first) + " of new buyers"),
         kpi("Repeat-backed demand", f.weeklyKg + " kg/wk", "latest week × returning share")),
+      questions(),
       h("div", { class: "grid-2" },
         panel(aiTitle("Top recommendations"),
           h("ul", { class: "actions" }, recs.slice(0, 5).map((r) =>
@@ -216,7 +230,7 @@
             h("span", { class: "funnel-label" }, st.label),
             h("strong", null, st.value.toLocaleString()),
             h("span", { class: "muted small" }, i ? M.pct(st.value / stages[i - 1].value) + " of previous step" : "start")))),
-          h("p", { class: "muted small" }, "Likes and views aren't counted. Only visits that reach MEOD Fresh or a group buy, then real purchases."))),
+          h("p", { class: "muted small" }, `Likes and views aren't counted. Only visits that reach MEOD Fresh or a group buy, then real purchases. Separately, ${f.interested} households have registered interest; that's a lead, not a step in this funnel.`))),
       panel("Demand → Planting at a glance",
         table([{ label: "Crop" }, { label: "Latest paid", num: true }, { label: "Consumer supply", num: true }, { label: "Returning", num: true }, { label: "Forecast" }, { label: "Verdict" }],
           verdicts.map(({ c, v }) => [h("a", { href: "#demand/" + c.id, class: "link" }, c.name), v.latest + " kg", v.supply + " kg", M.pct(v.repeatNow), M.forecastRead(c).confidence, pill(v.tone, v.label)]))),
@@ -228,6 +242,36 @@
           kpi("Ask MEOD questions", String(evCount("assistant"))),
           kpi("Harvest interest", String(M.state.interests.length))))
     ];
+  }
+
+  // The three questions Tyllage answers, each with its headline from the other tabs.
+  function questions() {
+    const j = M.journey().anomalies[0];
+    const fb = M.feedback().themes.find((t) => t.barrier && t.neg >= 2);
+    const cl = M.clv()[0];
+    const due = M.replenishment().filter((x) => x.cu.consent).length;
+    const nai = M.scenarios(M.crop("nai-bai")).slice(1).filter((r) => r.extraContribution > 0 && r.pWaste < 0.15).sort((a, b) => b.extraContribution - a.extraContribution)[0];
+    const trial = M.NEW_CROPS.map((n) => ({ n, r: M.newCropRead(n) })).find((x) => x.r.verdict.label === "Run a small trial");
+    const card = (n, q, lines, href, cta) => h("div", { class: "q-card" },
+      h("span", { class: "q-num" }, n), h("h2", null, q),
+      h("ul", null, lines.filter(Boolean).map((l) => h("li", null, l))),
+      h("a", { class: "link", href }, cta + " →"));
+    return h("div", { class: "q-grid" },
+      card("1", "How do we convince more people to buy Singapore-grown produce?", [
+        j ? `Carts under S$60 are dropping at the delivery fee (about ${j.lostOrders} orders/week). Offer pickup first.` : null,
+        fb ? `${fb.label} is the biggest complaint, so fix it before buying more ads.` : null,
+        "Recipe-led beats discounts on buyers who come back."
+      ], "#journey", "Win customers"),
+      card("2", "How do we turn first-time buyers into consistent customers?", [
+        `${cl.ch} customers are worth the most over 6 months (${M.money(cl.value)}).`,
+        `${due} opted-in customers are due to reorder in the next 3 days.`,
+        "Steady buyers could move to a weekly box."
+      ], "#loyalty", "Keep customers"),
+      card("3", "How do we use growing demand to expand production with confidence?", [
+        nai ? `Nai Bai: the forecast supports a +${M.forecastRead(M.crop("nai-bai")).trialKg} kg/week trial; the simulator's best balance is +${M.pct(nai.pct)} (about ${M.money(nai.extraContribution)}/week more, low waste risk).` : null,
+        trial ? `${trial.n.name}: reservations justify a small trial bed.` : null,
+        ...M.CROPS.filter((c) => M.plantingVerdict(c).key === "grow-demand").map((c) => `${c.name}: don't grow more yet; build repeat demand first.`)
+      ], "#demand", "Grow the farm"));
   }
 
   // 1. AI Growth Strategy Advisor
@@ -595,6 +639,10 @@
             sparkline(p.active), n.now + " / " + p.capacity,
             (n.trend >= 0 ? "+" : "") + M.pct(n.trend), M.pct(p.returning), String(n.score), pill(n.type.tone, n.type.label), M.pointStatus(p).action])),
         h("p", { class: "muted small" }, "Opportunity (0–100) weighs spare capacity, how many households come back, and the direction of travel.")),
+      panel(aiTitle("Opportunity finder: interest without orders"),
+        table([{ label: "Area" }, { label: "Campaign visits", num: true }, { label: "Orders", num: true }, { label: "Visit → order", num: true }, { label: "Know the pickup", num: true }, { label: "Read" }, { label: "Suggested test" }],
+          M.opportunities().map((o) => [h("strong", null, o.p.area), o.visits, o.orders, M.pct(o.conv), M.pct(o.aware), pill(o.kind.startsWith("Interest") ? "warn" : o.kind === "Converting well" ? "good" : "neutral", o.kind), o.action])),
+        h("p", { class: "muted small" }, "Visits and orders are counted per area, never per household. 'Know the pickup' is from a short demo survey.")),
       panel("What each area buys",
         h("label", { class: "field" }, h("span", null, "Pickup"),
           h("select", { onchange: (e) => { ui.point = e.target.value; route(); } }, M.POINTS.map((p) => h("option", { value: p.id, selected: p.id === sel.p.id }, p.area + " (" + p.id + ")")))),
@@ -657,6 +705,7 @@
           h("button", { class: "btn btn-outline", type: "button", onclick: () => decide("Not now") }, "Not now"),
           decided ? h("span", { class: "muted small" }, "Last decision: " + decided.status + " (" + new Date(decided.at).toLocaleDateString("en-SG") + ")") : null),
         howNote("Rules plus a straight-line trend with an 80% range, checked against the last 2 weeks.", "A seasonal time-series model on MEOD's full sales and confirmed group-buy orders, scored every week against what actually sold. Tyllage never changes a planting plan; a farm manager decides, considering seed lead times, space and yield risk.")),
+      simulator(c),
       mix.length ? panel(aiTitle("Grow more, or grow something different?"),
         table([{ label: "Spare supply in" }, { label: "Spare kg/week", num: true }, { label: "Demand outgrowing" }, { label: "Suggestion" }],
           mix.map((m) => [m.from.name, m.spareKg, m.to.name, m.text]))) : null,
@@ -664,6 +713,18 @@
         table([{ label: "Crop" }, { label: "Weeks", num: true }, { label: "Latest paid", num: true }, { label: "Available", num: true }, { label: "Weeks over", num: true }, { label: "Returning", num: true }, { label: "Margin", num: true }, { label: "Forecast" }, { label: "Verdict" }],
           M.CROPS.map((x) => { const w = M.plantingVerdict(x); return [h("a", { class: "link", href: "#demand/" + x.id }, x.name), x.paid.length, w.latest + " kg", w.supply + " kg", w.over + "/4", M.pct(w.repeatNow), M.pct(w.margin), M.forecastRead(x).confidence, pill(w.tone, w.label)]; })))
     ];
+  }
+
+  // AI Planting Scenario Simulator
+  function simulator(c) {
+    const rows = M.scenarios(c);
+    const best = rows.slice(1).filter((r) => r.extraContribution > 0 && r.pWaste < 0.15).sort((a, b) => b.extraContribution - a.extraContribution)[0];
+    return panel(aiTitle("What if we grow more " + c.name + "?"),
+      table([{ label: "Grow" }, { label: "Extra kg/week", num: true }, { label: "Sold to consumers", num: true }, { label: "Unsold", num: true }, { label: "Chance of >10% unsold", num: true }, { label: "Extra contribution / week", num: true }, { label: "Total contribution, 80% range", num: true }],
+        rows.map((r) => [r.pct ? "+" + M.pct(r.pct) : "As planned", r.extraKg, r.sold.toFixed(1) + " kg", r.unsold.toFixed(1) + " kg", M.pct(r.pWaste), r.pct ? (r.extraContribution >= 0 ? "+" : "") + M.money(r.extraContribution) : "—", M.money(r.p10) + " to " + M.money(r.p90)])),
+      h("p", { class: "verdict-line" }, best ? pill("good", "Best balance") : pill("neutral", "Hold"),
+        best ? ` +${M.pct(best.pct)} adds about ${M.money(best.extraContribution)} a week with only a ${M.pct(best.pWaste)} chance of more than 10% going unsold. Bigger increases add little or lose money, and the waste risk climbs fast.` : " No increase earns more than it risks right now."),
+      howNote("2,000 simulated weeks: demand drawn from the forecast range, yield varying ±10%, committed orders served first, unsold kg counted as lost (worst case).", "Probabilistic forecasts from MEOD's real sales and yields, plus real spoilage and clearance prices (unsold greens could go to Surprise Bags instead of waste)."));
   }
 
   // 9. AI Customer Engagement Assistant — the staff side
@@ -698,6 +759,158 @@
           h("p", { class: "muted small" }, "Each one is a candidate for a new approved FAQ answer, or an SEO page."))),
       panel(null, howNote("Keyword retrieval over MEOD's approved FAQ, plus live harvest, recipe and pickup data. Complaints, refunds, health and bulk orders always go to a person. Phone numbers, emails and full postal codes are removed before saving.",
         "Retrieval-augmented generation over the same approved knowledge, on MEOD's authorised WhatsApp or website chat, with the same hand-over rules."))
+    ];
+  }
+
+  // AI Conversion & Customer Journey Analyst
+  function journeyView() {
+    const J = M.JOURNEY, j = M.journey();
+    const last = J.sessions.length - 1;
+    const bandRows = Object.entries(J.bands).map(([band, b]) => {
+      let n = J.sessions[last] * b.share;
+      const counts = [Math.round(n)];
+      b.rates.forEach((r) => { n *= r[last]; counts.push(Math.round(n)); });
+      return { band, counts, rates: b.rates.map((r) => r[last]) };
+    });
+    return [
+      band("Customer journey", "Why people visit MEOD Fresh but don't buy, so MEOD fixes the step that's losing them instead of buying more traffic."),
+      j.anomalies.length ? j.anomalies.map((a) => panel(aiTitle("Unusual drop: " + a.band.replace(/^Cart/, "carts")),
+        h("div", { class: "verdict" },
+          pill("bad", "−" + M.pct(Math.abs(a.rel)) + " vs usual"),
+          h("p", null, h("strong", null, `Fewer ${a.band.replace(/^Cart/, "carts")} get from "${a.from}" to "${a.step}": ${M.pct(a.now)} in the last 2 weeks vs ${M.pct(a.mean)} before.`)),
+          h("p", null, `${a.note}. That's about ${a.lostOrders} lost orders a week. Carts of S$60+ haven't changed, so the fee is the likely cause, not the site.`),
+          h("p", null, "Suggested test: show group-buy pickup (no delivery fee) as an option on the cart page, before checkout, for half of visitors with carts under S$60 for two weeks. Compare paid orders.")),
+        why([`Compared the last 2 weeks with the 6 weeks before, for every step and cart size.`, `This step moved ${Math.abs(a.z).toFixed(0)} standard deviations from its usual level; anything over 3 is flagged.`, "Other steps and the S$60+ carts stayed within their normal range."], "How this was spotted"))) :
+        panel(null, h("p", null, "No unusual drops in the last 2 weeks.")),
+      panel("Where visitors leave (latest week)",
+        table([{ label: "Step" }].concat(bandRows.map((b) => ({ label: b.band, num: true }))),
+          J.steps.map((s, i) => [s].concat(bandRows.map((b) => b.counts[i].toLocaleString() + (i ? " (" + M.pct(b.rates[i - 1]) + ")" : ""))))),
+        h("p", { class: "muted small" }, "People reaching each step, with the share who continued from the step before. Demo numbers shaped like a Google Analytics checkout funnel.")),
+      panel(null, howNote("Compares each step's recent conversion with its own history and flags big, unusual drops; the explanation is written from those figures.", "Read from MEOD Fresh's analytics with MEOD's authorisation (no personal data), checked daily, with an LLM explaining what changed in plain words."))
+    ];
+  }
+
+  // Promotion Profitability Optimiser + Marketing Budget Allocator
+  function promotions() {
+    ui.promo = ui.promo || { normal: 1200, offer: 1000, cost: 700 };
+    ui.budget = ui.budget || 100000;
+    const pc = M.promoCheck(ui.promo);
+    const menu = M.promoMenu();
+    const alloc = M.allocate(ui.budget);
+    const D = M.DELIVERY;
+    const survey = M.state.survey;
+    const tally = (q) => ["yes", "maybe", "no"].map((v) => survey.filter((s) => s[q] === v).length);
+
+    const promoForm = h("form", { class: "utm-form", onsubmit: (e) => e.preventDefault(), onchange: (e) => {
+      const f = e.currentTarget;
+      const cents = (v, d) => Math.max(0, Math.round((Number(v) || d / 100) * 100));
+      ui.promo = { normal: cents(f.normal.value, 1200), offer: cents(f.offer.value, 1000), cost: cents(f.cost.value, 700) };
+      route();
+    } },
+      h("label", { class: "field" }, h("span", null, "Normal bundle price (S$)"), h("input", { type: "number", step: "0.5", min: 0, name: "normal", value: ui.promo.normal / 100 })),
+      h("label", { class: "field" }, h("span", null, "Offer price (S$)"), h("input", { type: "number", step: "0.5", min: 0, name: "offer", value: ui.promo.offer / 100 })),
+      h("label", { class: "field" }, h("span", null, "Produce + packing cost (S$)"), h("input", { type: "number", step: "0.5", min: 0, name: "cost", value: ui.promo.cost / 100 })));
+
+    return [
+      band("Promotions & budget", "Make buying from the farm feel like a better deal without a price war: use neighbourhood pickup, bundles and loyalty, and check every offer's margin."),
+      panel(aiTitle("Promotion profitability check"),
+        promoForm,
+        table([{ label: "Scenario" }, { label: "Customer pays", num: true }, { label: "Delivery / drop", num: true }, { label: "Leader", num: true }, { label: "Contribution", num: true }, { label: "Margin", num: true }, { label: "Margin Guard" }],
+          pc.rows.map((r) => [r.label, M.money(r.e.customerPays), M.money(r.e.deliveryCost), M.money(r.e.leader), M.money(r.e.contribution), M.pct(r.e.margin), pill(r.ok ? "good" : "bad", r.ok ? "Passes" : "Below " + M.pct(pc.floor))])),
+        h("p", { class: "verdict-line" }, pill(pc.verdict.tone, "Suggested"), " " + pc.verdict.text),
+        h("p", { class: "muted small" }, `Home delivery costs MEOD about ${M.money(D.homeCost)} per order; a group-buy drop costs about ${M.money(D.dropCost)} shared by ~${D.dropHouseholds} households (${M.money(Math.round(D.dropCost / D.dropHouseholds))} each) plus ${M.pct(D.leaderRate)} leader commission. Illustrative costs, before overheads, acquisition cost and spoilage.`)),
+      panel(aiTitle("Which promotions to test"),
+        table([{ label: "Promotion" }, { label: "Why customers like it" }, { label: "How MEOD protects margin" }, { label: "This order", num: true }, { label: "Came back (evidence)", num: true }, { label: "6-month value", num: true }, { label: "" }],
+          menu.map((m) => [h("strong", null, m.name), m.why, m.guard, M.money(m.e.contribution) + " (" + M.pct(m.e.margin) + ")", h("span", null, M.pct(m.repeat), h("br"), h("span", { class: "muted small" }, m.src)), M.money(m.sixMonth), pill(m.ok ? "good" : "warn", m.ok ? "Within guard" : "Below guard")])),
+        h("p", { class: "muted small" }, "6-month value = this order's contribution + expected repeat orders at the normal price. A one-time voucher can be worth it if buyers come back; the evidence so far says discount buyers mostly don't. Free delivery on small orders loses money on every order.")),
+      panel(aiTitle("Marketing budget allocator"),
+        h("form", { class: "approve-row", onsubmit: (e) => e.preventDefault(), onchange: (e) => { ui.budget = Math.max(10000, Math.round((Number(e.target.value) || 1000) * 100)); route(); } },
+          h("label", { class: "field", style: "margin:0" }, h("span", null, "Monthly budget (S$)"), h("input", { type: "number", min: 100, step: 50, value: ui.budget / 100 }))),
+        table([{ label: "Channel" }, { label: "Cost per new buyer", num: true }, { label: "6-month value", num: true }, { label: "Suggested", num: true }, { label: "Expected new buyers", num: true }, { label: "Status" }],
+          alloc.list.map((x) => [x.ch, M.money(Math.round(x.cpa)), M.money(x.value), M.money(x.alloc), x.alloc ? x.buyers + " (" + x.lo + "–" + x.hi + ")" : "—",
+            !x.alloc ? pill("neutral", "Not funded: lower value") : x.alloc >= x.cap ? pill("neutral", "At limit") : x.proven ? pill("good", "Proven") : pill("warn", "Limited test (≤15%)")])),
+        alloc.unallocated ? h("p", { class: "muted small" }, `${M.money(alloc.unallocated)} left unallocated: every channel is at its limit. Keep it, or fund a new test.`) : null,
+        howNote("Spends in S$5 steps on whichever channel's next dollar earns the most, with diminishing returns, a limit of 3× past spend per channel, and at most 15% on channels with fewer than 30 buyers. Cost per new buyer includes staff time to make the content.", "Fitted response curves per channel from MEOD's real spend and sales, re-run monthly.")),
+      panel("What customers told us (from the consumer page)",
+        survey.length ? table([{ label: "Question" }, { label: "Yes", num: true }, { label: "Maybe", num: true }, { label: "No", num: true }], [
+          ["Cheaper, but collect it?", ...tally("q1")], ["Pay more for home delivery?", ...tally("q2")], ["Freshness + local enough without lowest price?", ...tally("q3")]
+        ]) : h("p", { class: "muted" }, "No answers yet. Fill in 'Help MEOD get the deal right' on the consumer page."))
+    ];
+  }
+
+  // Seasonal Food Trend Radar + Creator & Community Matcher
+  function trendsView() {
+    const tr = M.trends(), ps = M.partners();
+    return [
+      band("Trends & partners", "Cooking topics people are turning to, checked against real purchases, and the creators and communities who fit them."),
+      panel(aiTitle("Seasonal food trend radar"),
+        table([{ label: "Topic" }, { label: "Season" }, { label: "Interest, 8 weeks" }, { label: "Interest change", num: true }, { label: "Recipe-link orders", num: true }, { label: "Status" }, { label: "Next" }],
+          tr.map((t) => [h("strong", null, t.topic), t.season, sparkline(t.idx), (t.search >= 0 ? "+" : "") + M.pct(t.search), t.buys.some((x) => x) ? (t.buysGrowth >= 0 ? "+" : "") + M.pct(t.buysGrowth) : "none yet", pill(t.status.tone, t.status.label), h("span", null, t.status.next, h("br"), h("span", { class: "muted small" }, "Crops: " + t.crops.map((id) => M.crop(id).name).join(", ")))])),
+        howNote("Last 4 weeks vs the 4 before, for a search/social interest index and for orders through recipe links. A topic needs both to rise before it becomes a campaign.", "Google Trends / Search Console and social listening with MEOD's authorisation, clustered into topics automatically.")),
+      panel(aiTitle("Creator & community matcher"),
+        h("div", { class: "type-grid" }, ps.map((p) => h("div", { class: "type-card" },
+          h("div", { class: "rec-top" }, h("strong", null, p.name), pill(p.score >= 65 ? "good" : "neutral", p.score + "/100")),
+          h("p", { class: "muted small" }, p.type + " · " + p.langs),
+          h("ul", { class: "small-list" }, p.why.map((w) => h("li", null, w)))))),
+        h("p", { class: "muted small" }, "Scores use topic fit, whether their audience is near a pickup with room, and past results with MEOD. Follower counts and engagement rates are never estimated; with no past results, the score says so."))
+    ];
+  }
+
+  // Customer Lifetime Value + Subscription designer + Replenishment
+  function loyalty() {
+    const cl = M.clv(), subs = M.subscriptions(), due = M.replenishment();
+    const best = cl[0], worst = cl[cl.length - 1];
+    const fromSite = M.state.subs.length;
+    return [
+      band("Loyalty & boxes", "Which channels bring customers who keep buying, who's ready to reorder, and who might want a regular box."),
+      panel(aiTitle("Lifetime value by how customers first found MEOD"),
+        table([{ label: "First came from" }, { label: "Customers", num: true }, { label: "Still buying at month 6", num: true }, { label: "6-month value", num: true }, { label: "Cost to acquire", num: true }, { label: "Value ÷ cost", num: true }],
+          cl.map((c) => [c.ch, c.n, M.pct(c.m6), M.money(c.value), c.cac ? M.money(c.cac) : "—", c.ratio ? c.ratio.toFixed(1) + "×" : "—"])),
+        h("p", { class: "verdict-line" }, pill("good", "Insight"), ` A customer who first came from ${best.ch} is worth about ${M.money(best.value)} over six months; one from ${worst.ch} about ${M.money(worst.value)}. Judge channels on this, not on first orders.`),
+        howNote("Cohort retention × orders per month × average order × margin.", "Real cohorts from MEOD Fresh customer IDs; a predictive value model once there's a year of history.")),
+      panel(aiTitle("Ready to reorder"),
+        due.length ? table([{ label: "Customer" }, { label: "Usual gap", num: true }, { label: "Due", num: true }, { label: "Usual day" }, { label: "Send" }, { label: "Suggested" }],
+          due.map((x) => [x.cu.id, x.cu.interval + " days", x.due <= 0 ? "now" : "in " + x.due + " day" + (x.due > 1 ? "s" : ""), x.day, x.cu.consent ? x.when : "—", x.action])) : h("p", { class: "muted" }, "Nobody is due in the next 3 days."),
+        h("p", { class: "muted small" }, "Uses each customer's own gap between orders. Reminders go only to customers who opted in, and never more than one per order cycle.")),
+      panel(aiTitle("Weekly or fortnightly box"),
+        h("p", null, `${subs.steady.length} customers already buy steadily (6+ orders, every 2 weeks or more often): ${subs.weekly.length} weekly-ish, ${subs.fortnightly.length} fortnightly. ${fromSite ? fromSite + " more said 'I'd like this weekly' on the consumer page." : ""}`),
+        table([{ label: "Box" }, { label: "How often" }, { label: "Contents" }, { label: "Price", num: true }, { label: "Margin", num: true }, { label: "Margin Guard" }],
+          subs.boxes.map((b) => [h("strong", null, b.name), b.freq, b.contents.map((c) => b.each + " g " + c).join(", "), M.money(b.price) + " (save " + M.money(b.full - b.price) + ")", M.pct(b.e.margin), pill(b.ok ? "good" : "bad", b.ok ? "Passes" : "Below floor")])),
+        h("p", null, `If 25–40% of steady buyers opted in, that's roughly ${subs.demand.low}–${subs.demand.high} kg a week committed in advance — the most dependable demand MEOD can plan around.`),
+        howNote("Spots steady buyers from order history, prices boxes at 5% under buying separately (pickup only) and checks the margin. Test with interest sign-ups before building billing.", "Cohort analysis on real orders, box contents rotated by harvest, and a subscription-demand forecast feeding Demand → Planting."))
+    ];
+  }
+
+  // Customer Feedback Intelligence
+  function feedbackView() {
+    const extra = M.state.inbox.filter((x) => x.kind !== "intent").map((x, i) => ({ id: "CH-" + i, source: "Chat", text: x.text, rating: null }));
+    const fb = M.feedback(extra);
+    return [
+      band("Feedback", "Reviews, complaints, social comments, enquiries and Ask MEOD chats, grouped into what's helping and what's holding growth back."),
+      panel(aiTitle("Summary"), h("p", { class: "verdict-line" }, pill("warn", "Top barrier"), " " + fb.summary),
+        howNote("Keyword topic grouping and a simple positive/negative word score, combined with star ratings.", "Topic clustering and sentiment models across reviews, social comments and support tickets, with an LLM writing the summary from the counted themes.")),
+      panel("Themes",
+        table([{ label: "Theme" }, { label: "Mentions", num: true }, { label: "Negative", num: true }, { label: "Positive", num: true }, { label: "Type" }, { label: "Suggested" }],
+          fb.themes.map((t) => [h("details", { class: "cluster" }, h("summary", null, t.label), h("ul", null, t.hits.slice(0, 4).map((f) => h("li", null, `"${f.text}" — ${f.source}`)))), t.count, t.neg, t.pos, pill(t.barrier ? "warn" : "neutral", t.barrier ? "Growth barrier" : "Product"), t.action]))),
+      panel("All feedback",
+        table([{ label: "Source" }, { label: "Feedback" }, { label: "Rating", num: true }, { label: "Sentiment" }],
+          fb.items.slice(0, 40).map((f) => [f.source, f.text, f.rating ? f.rating + "★" : "—", pill(f.sentiment === "Positive" ? "good" : f.sentiment === "Negative" ? "bad" : "neutral", f.sentiment)])),
+        h("p", { class: "muted small" }, "Demo feedback plus Ask MEOD questions from this browser (contact details removed)."))
+    ];
+  }
+
+  // New Crop Demand Tester
+  function newCrops() {
+    const mine = (id, type) => M.state.newcrop.filter((x) => x.id === id && x.type === type).length;
+    return [
+      band("New crops", "Test demand for a crop before planting it: interest is cheap, reservations are a real commitment."),
+      M.NEW_CROPS.map((nc) => {
+        const r = M.newCropRead(nc, mine(nc.id, "interest"), mine(nc.id, "reserve"));
+        return panel(aiTitle(nc.name + " (" + nc.zh + ")"),
+          kpis(kpi("Interested", String(r.interest)), kpi("Reserved", String(r.reserved), M.pct(r.conv) + " of interested"), kpi("Reserved demand", r.kg + " kg/wk"), kpi("Margin", M.pct(r.margin), M.money(nc.price) + "/kg")),
+          h("p", { class: "verdict-line" }, pill(r.verdict.tone, r.verdict.label), " " + r.verdict.text));
+      }),
+      panel(null, howNote("Separates interest from reservations, sizes a trial to reservations only, and checks the margin.", "Reservations taken on MEOD Fresh with a small refundable deposit, and scenario modelling of trial-bed size vs sell-through."))
     ];
   }
 
@@ -736,7 +949,7 @@
     return [
       band("Settings", "Decision thresholds are illustrative until MEOD confirms them. Percentages are entered as whole numbers."),
       panel("Decision thresholds", form),
-      panel("The 10 AI features: what's real today",
+      panel("The AI features: what's real today",
         table([{ label: "Feature" }, { label: "In this prototype" }, { label: "Next, with real data" }, { label: "Where" }], [
           ["1. Growth Strategy Advisor", "Ranking rules; explanations written only from listed figures", "LLM explanations grounded in the same verified analytics", "Strategy"],
           ["2. Social Campaign Studio", "Rules + templates for Instagram, Facebook, TikTok, WhatsApp", "LLM drafts from farm data; results fed back", "Campaign Studio"],
@@ -747,7 +960,20 @@
           ["7. Neighbourhood intelligence", "Opportunity score, area types, small-group suppression", "Clustering and per-area forecasts", "Neighbourhoods"],
           ["8. Experiment Optimiser", "Incremental orders, z-tests, sample-size planner", "Holdout groups; adaptive budget allocation", "Experiments"],
           ["9. Engagement assistant", "Keyword retrieval over approved FAQ + live data; hand-over", "RAG on MEOD's authorised chat channels", "Consumer page, Inbox"],
-          ["10. Farm storytelling", "Templates from approved farm records + fact checklist", "LLM storytelling from the same records, still verified", "Farm stories"]
+          ["10. Farm storytelling", "Templates from approved farm records + fact checklist", "LLM storytelling from the same records, still verified", "Farm stories"],
+          ["11. Conversion & journey analyst", "Step-by-step funnel by cart size; flags drops over 3 standard deviations", "MEOD Fresh analytics with authorisation; daily checks; LLM explanations", "Customer journey"],
+          ["12. Neighbourhood opportunity finder", "Visits vs orders vs pickup awareness per area", "Geographic clustering on aggregated campaign data", "Neighbourhoods"],
+          ["13. Basket builder", "Household size + must-haves + complements, sized to the week; pickup vs delivery cost", "Order history, price sensitivity and stock-aware bundles", "Consumer page → Fresh deals"],
+          ["14. Replenishment predictor", "Each customer's own reorder gap and usual day; consent-gated reminders", "Predictive reorder timing model", "Loyalty & boxes"],
+          ["15. Feedback intelligence", "Keyword themes, sentiment words + ratings, barrier vs product", "Topic clustering, sentiment models, LLM summaries", "Feedback"],
+          ["16. New crop demand tester", "Interest vs reservations; trial sized to reservations; margin check", "Deposits on MEOD Fresh; trial-size scenarios", "New crops, consumer page"],
+          ["17. Subscription & retention designer", "Steady-buyer cohorts, box pricing with Margin Guard, committed-kg range", "Real cohorts; box demand into Demand → Planting", "Loyalty & boxes"],
+          ["18. Seasonal trend radar", "Interest index vs recipe-link orders; needs both to rise", "Search and social trend data with authorisation", "Trends & partners"],
+          ["19. Creator & community matcher", "Topic fit + area fit + recorded MEOD results; no invented metrics", "Content classification of real partner content", "Trends & partners"],
+          ["20. Marketing budget allocator", "Greedy allocation by marginal value with caps and test limits", "Fitted channel response curves", "Promotions & budget"],
+          ["21. Planting scenario simulator", "2,000 simulated weeks of demand and yield", "Probabilistic forecasts from real sales and yields", "Demand → Planting"],
+          ["22. Lifetime value analyst", "Retention cohorts × order value × margin vs acquisition cost", "Real cohorts; predictive value model", "Loyalty & boxes"],
+          ["Promotion profitability optimiser", "Deterministic margin check by pickup vs delivery; 6-month value per promotion", "Real costs and promotion results", "Promotions & budget"]
         ])),
       panel("Demo data",
         h("p", null, "Clears interest answers, activity, chat questions, drafts, decisions and thresholds saved in this browser."),
@@ -758,18 +984,24 @@
   /* ---------- router ---------- */
 
   const nav = document.getElementById("hub-tabs");
+  const subnav = document.getElementById("hub-subtabs");
   const view = document.getElementById("view");
-  nav.replaceChildren(...TABS.map((t) => h("a", { href: "#" + t.id, "data-tab": t.id }, t.label)));
+  nav.replaceChildren(...GROUPS.map((g) => h("a", { href: "#" + TABS.find((t) => t.group === g.id).id, "data-group": g.id }, g.label)));
 
   function route() {
     const [id, param] = (location.hash.slice(1) || "overview").split("/");
     const tab = TABS.find((t) => t.id === id) || TABS[0];
     nav.querySelectorAll("a").forEach((a) => {
-      const on = a.dataset.tab === tab.id;
+      const on = a.dataset.group === tab.group;
       a.classList.toggle("on", on);
-      if (on) { a.setAttribute("aria-current", "page"); nav.scrollLeft = a.offsetLeft - 16; }
+      if (on) { a.setAttribute("aria-current", "true"); nav.scrollLeft = a.offsetLeft - 16; }
       else a.removeAttribute("aria-current");
     });
+    const siblings = TABS.filter((t) => t.group === tab.group);
+    subnav.hidden = siblings.length < 2;
+    subnav.replaceChildren(...siblings.map((t) => h("a", { href: "#" + t.id, class: t.id === tab.id ? "on" : null, "aria-current": t.id === tab.id ? "page" : null }, t.label)));
+    const cur = subnav.querySelector(".on");
+    if (cur) subnav.scrollLeft = cur.offsetLeft - 16;
     const y = window.scrollY;
     view.replaceChildren(...[tab.render(param)].flat(Infinity).filter(Boolean));
     document.title = tab.label + " — Growth Intelligence | Tyllage for MEOD";

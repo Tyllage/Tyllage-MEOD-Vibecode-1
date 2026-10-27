@@ -36,6 +36,19 @@ This audit checks the prototype against the B2C growth concept (*Demand Growth I
 | **8. Experiment optimiser** | Experiments, `campaignImpact()`, `compare()`, `sampleSize()` | ⚠️ Baseline = weeks before; no holdout groups |
 | **9. Engagement assistant** | Consumer page → Ask MEOD, Inbox, `answer()`, `redact()` | ✅ Keyword retrieval + live data + hand-over; not an LLM |
 | **10. Farm storytelling** | Farm stories, `story()`, `FARM_LOG` | ✅ Fact checklist gates approval |
+| **11. Conversion & journey analyst** | Customer journey, `journey()` | ⚠️ Synthetic funnel; 3-sigma rule on 6-week history |
+| **12. Neighbourhood opportunity finder** | Neighbourhoods, `opportunities()` | ⚠️ Demo visits, orders and awareness survey |
+| **13. Basket builder** | Consumer page → Fresh deals, `basket()`, `bundles()` | ✅ Margin-checked; no order history yet |
+| **14. Replenishment predictor** | Loyalty & boxes, `replenishment()` | ✅ Own-interval rule; consent-gated |
+| **15. Feedback intelligence** | Feedback, `feedback()`, `sentiment()` | ⚠️ Keyword themes and word-list sentiment |
+| **16. New crop demand tester** | New crops, consumer page → Coming next, `newCropRead()` | ✅ Interest vs reservations; no deposits |
+| **17. Subscription & retention designer** | Loyalty & boxes, `subscriptions()` | ✅ Interest only; no billing |
+| **18. Seasonal trend radar** | Trends & partners, `trends()` | ⚠️ Synthetic interest index |
+| **19. Creator & community matcher** | Trends & partners, `partners()` | ✅ Transparent score; no invented metrics |
+| **20. Marketing budget allocator** | Promotions & budget, `allocate()` | ⚠️ Greedy rule with caps; small samples |
+| **21. Planting scenario simulator** | Demand → Planting, `simulate()`, `scenarios()` | ⚠️ Normal demand and yield; unsold = lost |
+| **22. Lifetime value analyst** | Loyalty & boxes, `clv()` | ⚠️ Synthetic cohorts |
+| **Smart Savings / Promotion profitability** | Consumer page → Fresh deals; Promotions & budget, `orderEconomics()`, `promoCheck()`, `promoMenu()` | ✅ Deterministic; illustrative costs |
 | Automated publishing | — | ❌ Deliberately out of scope |
 | Subscription / recurring billing | — | ❌ Deliberately out of scope until demand is shown |
 
@@ -68,11 +81,15 @@ This audit checks the prototype against the B2C growth concept (*Demand Growth I
 - The forecast is a straight-line trend. It can't see seasons or festivals and will overshoot a crop whose growth flattens. The backtest error is shown so staff can judge it.
 - Experiment "extra orders" compares with the weeks before each campaign, not a holdout group, so it can't separate a campaign from a trend.
 - RFM cut-offs are fixed numbers; they should be set from MEOD's real order distribution.
+- Delivery and drop costs (S$12 per home delivery, S$20 per group-buy drop, 20 households per drop, 5% leader commission, S$0.80 packing) are made up. The customer-facing S$10 fee below S$60 is from MEOD Fresh's published policy and should be re-checked.
+- The planting simulator assumes demand and yield are normally distributed and that unsold kg is wasted. It ignores seasonality, seed lead time and greenhouse space.
+- Lifetime value uses six months of synthetic retention per channel; acquisition cost includes made-up staff time per campaign.
+- The budget allocator has small samples (14–97 buyers per channel) and treats each channel's past cost per buyer as fixed until its cap.
 - *Ask MEOD* matches keywords. It will miss questions phrased differently; the Inbox lists them so the approved FAQ can grow.
 
 ## 4. Responsive check
 
-Checked on 27 Oct 2026 at 375 px (phone), 534 px and 1280 px (desktop): all 11 hub tabs, the consumer page and the Ask MEOD panel, no horizontal scrolling, no console errors. Hub tables become labelled cards under 640 px.
+Checked on 27 Oct 2026 at 375 px (phone), 534 px and 1280 px (desktop): all 17 hub pages, the consumer page (including Fresh deals, Coming next and the Ask MEOD panel), no horizontal scrolling, no console errors. Hub tables become labelled cards under 640 px.
 
 ## 5. Questions to validate with MEOD
 
@@ -88,6 +105,10 @@ Checked on 27 Oct 2026 at 375 px (phone), 534 px and 1280 px (desktop): all 11 h
 10. Can Tyllage get read access to MEOD Fresh (Shopify) analytics and Google Search Console?
 11. Which questions should *Ask MEOD* answer, and who at MEOD approves its answers and takes hand-overs?
 12. Who records greenhouse updates today, and would growers be happy for approved updates to become public stories?
+13. What does a home delivery and a group-buy drop actually cost MEOD, and what commission do leaders get?
+14. Would MEOD offer cheaper prices for pickup than for home delivery, and can leaders keep perishables cold and collected promptly (SFA guidance)?
+15. Which new crops could MEOD grow, how long to first harvest, and how many reservations would justify a trial bed?
+16. Would MEOD consider an optional weekly box, and through which checkout?
 
 ## 6. Suggested first experiment
 

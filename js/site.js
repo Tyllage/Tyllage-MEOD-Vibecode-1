@@ -252,8 +252,82 @@
     chatInput.value = "";
   });
 
+  /* ---------- fresh deals: basket builder, bundles, survey ---------- */
+  const basketForm = document.getElementById("basket-form");
+  document.getElementById("basket-likes").replaceChildren(...M.featuredCrops().map((c) =>
+    h("label", { class: "chip" }, h("input", { type: "checkbox", name: "like", value: c.id }), " " + c.name)));
+
+  function renderBasket() {
+    const fd = new FormData(basketForm);
+    const mode = fd.get("mode"), size = Number(fd.get("hh"));
+    const b = M.basket({ size, liked: fd.getAll("like"), mode });
+    const D = M.DELIVERY;
+    const other = M.basket({ size, liked: fd.getAll("like"), mode: mode === "home" ? "pickup" : "home" });
+    // replaceChildren() would print a null as "null", so build the list and drop empty items.
+    document.getElementById("basket").replaceChildren(...[
+      h("h3", null, "Your week of greens"),
+      h("ul", { class: "basket-lines" }, b.lines.map((l) => h("li", null,
+        h("span", null, h("strong", null, l.c.name), " · " + l.grams + " g", l.recipe ? h("span", { class: "muted small" }, " — try " + l.recipe.title) : null),
+        h("span", null, M.money(l.cents))))),
+      h("dl", { class: "basket-sum" },
+        h("dt", null, "Vegetables"), h("dd", null, M.money(b.subtotal)),
+        h("dt", null, mode === "home" ? "Home delivery" : "Group-buy pickup"), h("dd", null, b.e.fee ? M.money(b.e.fee) : "No delivery fee"),
+        h("dt", { class: "total" }, "You pay"), h("dd", { class: "total" }, M.money(b.e.customerPays))),
+      mode === "home" && b.gap ? h("p", { class: "nudge" }, `Add ${M.money(b.gap)} more for free delivery, or choose group-buy pickup and pay ${M.money(other.e.customerPays)}.`) : null,
+      mode === "pickup" ? h("p", { class: "nudge good" }, `Home delivery for this basket would be ${M.money(other.e.customerPays)}.`) : null,
+      h("div", { class: "crop-actions" },
+        h("a", { class: "btn btn-sm btn-gold", target: "_blank", rel: "noopener", href: M.utm("tyllage", "landing-page", "fresh-deals", "basket-" + mode), onclick: () => M.track("basket_click", mode) }, "Shop this on MEOD Fresh ↗"),
+        mode === "pickup" ? h("a", { class: "btn btn-sm btn-outline", href: "#collect" }, "Find my pickup") : null,
+        h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => {
+          M.state.subs.push({ size, mode, crops: b.lines.map((l) => l.c.id), at: new Date().toISOString() });
+          M.save(); M.track("sub_interest", String(size));
+          toast("Noted! MEOD will count you as interested in a weekly box. No sign-up or payment.");
+        } }, "I'd like this weekly")),
+      h("p", { class: "form-note" }, `Quantities are a guide for ${size === 6 ? "5+" : size === 4 ? "3–4" : "1–2"} people. Prices are demo prices.`)].filter(Boolean));
+  }
+  basketForm.addEventListener("change", renderBasket);
+
+  document.getElementById("bundle-grid").replaceChildren(...M.bundles().map((bd) => h("article", { class: "card bundle" },
+    h("h4", null, bd.name),
+    h("p", null, bd.items.map((x) => x.grams + " g " + x.c.name).join(" + ")),
+    h("p", null, h("strong", { class: "price" }, M.money(bd.price)), " ", h("s", { class: "muted" }, M.money(bd.full))),
+    h("a", { class: "btn btn-sm btn-gold", target: "_blank", rel: "noopener", href: M.utm("tyllage", "landing-page", "fresh-deals", "bundle"), onclick: () => M.track("bundle_click", bd.name) }, "Get the bundle ↗"))));
+
+  const survey = document.getElementById("survey");
+  survey.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const fd = new FormData(survey);
+    const ans = { q1: fd.get("q1"), q2: fd.get("q2"), q3: fd.get("q3") };
+    if (!ans.q1 || !ans.q2 || !ans.q3) { document.getElementById("survey-error").textContent = "Please answer all three."; return; }
+    document.getElementById("survey-error").textContent = "";
+    M.state.survey.push({ ...ans, at: new Date().toISOString() });
+    M.save(); M.track("survey", "");
+    survey.reset();
+    toast("Thanks! That helps MEOD decide between cheaper pickup and delivery.");
+  });
+
+  /* ---------- coming next: new crop demand test ---------- */
+  function renderNewCrops() {
+    const mine = (id, type) => M.state.newcrop.filter((x) => x.id === id && x.type === type).length;
+    document.getElementById("newcrop-grid").replaceChildren(...M.NEW_CROPS.map((nc) => {
+      const r = M.newCropRead(nc, mine(nc.id, "interest"), mine(nc.id, "reserve"));
+      const reserved = mine(nc.id, "reserve") > 0;
+      return h("article", { class: "card newcrop" },
+        h("div", { class: "crop-media small" }, leafArt()),
+        h("div", { class: "crop-body" },
+          h("h3", null, nc.name, " ", h("span", { class: "zh", lang: "zh" }, nc.zh)),
+          h("p", null, `About ${nc.weeksToHarvest} weeks from sowing. Around ${M.money(nc.price)}/kg.`),
+          h("p", { class: "muted small" }, `${r.interest} interested · ${r.reserved} reserved`),
+          h("div", { class: "crop-actions" },
+            h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => { M.state.newcrop.push({ id: nc.id, type: "interest", at: new Date().toISOString() }); M.save(); M.track("newcrop_interest", nc.id); renderNewCrops(); toast("Counted as interest."); } }, "I'm interested"),
+            h("button", { class: "btn btn-sm btn-forest", type: "button", disabled: reserved, onclick: () => { M.state.newcrop.push({ id: nc.id, type: "reserve", at: new Date().toISOString() }); M.save(); M.track("newcrop_reserve", nc.id); renderNewCrops(); toast("Reserved a share of the first harvest. Nothing charged in this prototype."); } }, reserved ? "Reserved ✓" : "Reserve first harvest"))));
+    }));
+  }
+
   renderHarvest();
   renderRecipes();
   renderForYou();
+  renderBasket();
+  renderNewCrops();
   renderInterestSummary();
 })();

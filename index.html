@@ -21,8 +21,10 @@
       <a class="logo" href="index.html"><img src="assets/meod-light.svg" alt="MEOD Farm home" width="106" height="30"></a>
       <ul class="nav-links" id="nav-links">
         <li><a href="#harvest">This week</a></li>
+        <li><a href="#deals">Deals</a></li>
         <li><a href="#cook">Cook</a></li>
         <li><a href="#collect">Collect</a></li>
+        <li><a href="#next">Coming next</a></li>
         <li><a href="#shape">Shape our harvest</a></li>
         <li><a href="#farmers">Farmers</a></li>
       </ul>
@@ -67,7 +69,58 @@
       </div>
     </section>
 
-    <section id="cook" class="tint">
+    <section id="deals" class="tint">
+      <div class="container">
+        <span class="eyebrow dark">Fresh deals near you</span>
+        <h2 class="script section-title">Better value when neighbours buy together</h2>
+        <p class="lead">Collect from a neighbourhood group buy and skip the home-delivery fee, or build a basket that reaches free delivery.</p>
+        <div class="deals-layout">
+          <form class="card basket-form" id="basket-form">
+            <fieldset>
+              <legend>How will you get it?</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="mode" value="pickup" checked> Group-buy pickup</label>
+                <label class="chip"><input type="radio" name="mode" value="home"> Home delivery</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Household</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="hh" value="2" checked> 1–2</label>
+                <label class="chip"><input type="radio" name="hh" value="4"> 3–4</label>
+                <label class="chip"><input type="radio" name="hh" value="6"> 5+</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Must-haves <span class="muted">(optional)</span></legend>
+              <div class="chips" id="basket-likes"></div>
+            </fieldset>
+          </form>
+          <div class="card basket" id="basket" aria-live="polite"></div>
+        </div>
+        <h3 class="sub-title">Farm-approved bundles</h3>
+        <div class="bundle-grid" id="bundle-grid"></div>
+        <div class="offer-row">
+          <div class="offer"><strong>First order?</strong> A one-time welcome discount may apply. <span class="muted">(Illustrative; MEOD to confirm.)</span></div>
+          <div class="offer"><strong>Refer a neighbour.</strong> You both get a reward after their first order. <span class="muted">(Illustrative.)</span></div>
+        </div>
+        <form class="card survey" id="survey">
+          <h3>Help MEOD get the deal right</h3>
+          <p class="muted">Three quick questions. Your answers stay anonymous.</p>
+          <fieldset><legend>Would you buy from MEOD if veg was cheaper but you had to collect it?</legend>
+            <div class="chips"><label class="chip"><input type="radio" name="q1" value="yes"> Yes</label><label class="chip"><input type="radio" name="q1" value="maybe"> Maybe</label><label class="chip"><input type="radio" name="q1" value="no"> No</label></div></fieldset>
+          <fieldset><legend>Would you pay a bit more for home delivery?</legend>
+            <div class="chips"><label class="chip"><input type="radio" name="q2" value="yes"> Yes</label><label class="chip"><input type="radio" name="q2" value="maybe"> Maybe</label><label class="chip"><input type="radio" name="q2" value="no"> No</label></div></fieldset>
+          <fieldset><legend>Would freshness and local growing be enough, even if it's not the lowest price?</legend>
+            <div class="chips"><label class="chip"><input type="radio" name="q3" value="yes"> Yes</label><label class="chip"><input type="radio" name="q3" value="maybe"> Maybe</label><label class="chip"><input type="radio" name="q3" value="no"> No</label></div></fieldset>
+          <p class="form-error" id="survey-error" role="alert"></p>
+          <button class="btn btn-forest" type="submit">Send answers</button>
+        </form>
+        <p class="form-note">Delivery: S$10 below S$60, free from S$60, per MEOD Fresh's shipping policy. Group-buy savings depend on each leader's arrangements and MEOD's approved pricing.</p>
+      </div>
+    </section>
+
+    <section id="cook">
       <div class="container">
         <span class="eyebrow dark">What should I cook?</span>
         <h2 class="script section-title">Dinner from this week's harvest</h2>
@@ -112,7 +165,7 @@
       </div>
     </section>
 
-    <section id="collect">
+    <section id="collect" class="tint">
       <div class="container">
         <span class="eyebrow dark">Neighbourhood group buys</span>
         <h2 class="script section-title">Collect from a neighbour</h2>
@@ -125,6 +178,16 @@
         <p class="form-note">Your postal code stays in this browser. We only use its first two digits to estimate your area.</p>
         <p class="form-error" id="postal-error" role="alert"></p>
         <div class="point-list" id="point-list" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="next">
+      <div class="container">
+        <span class="eyebrow dark">Coming next?</span>
+        <h2 class="script section-title">You decide what we grow</h2>
+        <p class="lead">These crops could join MEOD's harvest. Say you're interested, or reserve a share of the first harvest. You only pay when you collect.</p>
+        <div class="newcrop-grid" id="newcrop-grid"></div>
+        <p class="form-note">A reservation counts as a firmer commitment than interest. In this prototype nothing is charged.</p>
       </div>
     </section>
 
@@ -231,6 +294,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/intel.js"></script>
+  <script src="js/insights.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/site.js"></script>
 </body>
