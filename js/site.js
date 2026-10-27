@@ -1,8 +1,8 @@
-/* Consumer page: This Week at MEOD. Every interaction is logged locally with MEOD.track()
+/* Consumer page: Tyllage weekly savings + this week's harvest. Every interaction is logged locally with TY.track()
    so the farm view (growth.html) can show what this browser did. Nothing leaves the browser. */
 (function () {
   "use strict";
-  const M = window.MEOD, { h, leafArt, toast } = window.UI;
+  const M = window.TY, UI = window.UI, { h, leafArt, toast } = UI;
 
   /* ---------- header ---------- */
   const header = document.querySelector(".site-header");
@@ -24,9 +24,9 @@
   const week = M.weekLabels(1)[0];
   document.getElementById("hero-week").textContent = "week of " + week;
 
-  // Every store link carries UTM tags so MEOD Fresh analytics can attribute the visit.
+  // Every store link carries UTM tags so Tyllage analytics can attribute the visit.
   document.querySelectorAll("[data-store]").forEach((a) => {
-    a.href = M.utm("tyllage", "landing-page", "this-week-at-meod", a.dataset.store);
+    a.href = M.utm("tyllage", "landing-page", "this-week-at-tyllage", a.dataset.store);
     a.addEventListener("click", () => M.track("store_click", a.dataset.store));
   });
 
@@ -41,7 +41,6 @@
     const list = M.featuredCrops();
     grid.replaceChildren(...list.map((c) => {
       const left = M.uncommittedKg(c);
-      const link = M.utm("tyllage", "landing-page", "this-week-at-meod", "crop-" + c.id);
       return h("article", { class: "crop-card card" },
         h("div", { class: "crop-media" },
           c.img ? h("img", { src: c.img, alt: c.name, width: 300, height: 300, loading: "lazy" }) : leafArt(),
@@ -51,8 +50,8 @@
           h("p", null, c.story),
           h("p", { class: "avail" }, h("strong", null, left + " kg"), " still available this week"),
           h("div", { class: "crop-actions" },
-            h("a", { class: "btn btn-sm btn-gold", href: link, target: "_blank", rel: "noopener",
-              onclick: () => M.track("product_click", c.id) }, "Buy on MEOD Fresh ↗"),
+            h("button", { class: "btn btn-sm btn-gold", type: "button",
+              onclick: () => { M.track("product_click", c.id); addToBasket(c.id, 1); } }, "Add to basket · " + M.money(M.ourPack(c).cents)),
             h("a", { class: "btn btn-sm btn-outline", href: "#cook", onclick: () => { pickCrop = c.id; renderRecipes(); } }, "Recipes"))));
     }));
   }
@@ -96,9 +95,8 @@
           h("span", { class: "muted" }, r.mins + " min")),
         h("p", null, "You'll need about ", h("strong", null, grams + " g " + c.name), " for " + (size === 6 ? "5+" : size === 4 ? "3–4" : "1–2") + " people."),
         h("div", { class: "tags" }, r.tags.map((t) => h("span", { class: "mini-tag" }, t)), r.spicy ? h("span", { class: "mini-tag" }, "spicy") : null),
-        h("a", { class: "btn btn-sm btn-forest", target: "_blank", rel: "noopener",
-          href: M.utm("tyllage", "landing-page", "this-week-at-meod", "recipe-" + r.id),
-          onclick: () => M.track("recipe_click", r.id) }, "Get the " + c.name + " ↗"));
+        h("button", { class: "btn btn-sm btn-forest", type: "button",
+          onclick: () => { M.track("recipe_click", r.id); addToBasket(c.id, Math.max(1, Math.round(grams / M.PACK_G))); } }, "Add " + c.name + " to basket"));
     }));
   }
   cookForm.addEventListener("change", () => { pickCrop = null; renderRecipes(); });
@@ -135,7 +133,7 @@
         } }, "Ask to join"));
     });
     const note = close.length ? null : h("div", { class: "card notice" },
-      h("p", null, h("strong", null, "No pickup within " + R.nearPointKm + " km yet."), " Tell the farm what you'd buy below, so MEOD knows there's demand in your area. Or ask MEOD about becoming a group-buy leader."),
+      h("p", null, h("strong", null, "No pickup within " + R.nearPointKm + " km yet."), " Tell the farm what you'd buy below, so Tyllage knows there's demand in your area. Or ask Tyllage about becoming a group-buy leader."),
       h("a", { class: "btn btn-sm btn-forest", href: "#shape" }, "Tell the farm"));
     out.replaceChildren(...(note ? [note] : []), ...cards);
   });
@@ -171,7 +169,7 @@
     const err = document.getElementById("interest-error");
     if (!crops.length) { err.textContent = "Pick at least one vegetable."; return; }
     if (postal && !M.locatePostal(postal)) { err.textContent = "That postal code doesn't look right. Leave it blank or enter 6 digits."; return; }
-    if (!fd.get("consent")) { err.textContent = "Please tick the box so MEOD can count your answer."; return; }
+    if (!fd.get("consent")) { err.textContent = "Please tick the box so Tyllage can count your answer."; return; }
     err.textContent = "";
     // Only the postal sector is kept, never the full code.
     M.state.interests.push({ crops, freq: fd.get("freq"), via: fd.get("via"), sector: postal ? postal.slice(0, 2) : "", at: new Date().toISOString() });
@@ -198,14 +196,13 @@
       h("h4", null, r.c.name, " ", h("span", { class: "zh", lang: "zh" }, r.c.zh)),
       h("p", null, r.reason),
       r.recipe ? h("p", { class: "muted" }, "Try: " + r.recipe.title + " (" + r.recipe.mins + " min)") : null,
-      h("a", { class: "btn btn-sm btn-gold", target: "_blank", rel: "noopener",
-        href: M.utm("tyllage", "landing-page", "this-week-at-meod", "foryou-" + r.c.id),
-        onclick: () => M.track("rec_click", r.c.id) }, "Add " + r.c.name + " ↗"))));
+      h("button", { class: "btn btn-sm btn-gold", type: "button",
+        onclick: () => { M.track("rec_click", r.c.id); addToBasket(r.c.id, 1); } }, "Add " + r.c.name + " to basket"))));
   }
   usual.addEventListener("change", renderForYou);
   cookForm.addEventListener("change", renderForYou);
 
-  /* ---------- Ask MEOD assistant ---------- */
+  /* ---------- Ask Tyllage assistant ---------- */
   const chat = document.getElementById("chat");
   const chatLog = document.getElementById("chat-log");
   const chatOpen = document.getElementById("chat-open");
@@ -229,7 +226,11 @@
     M.track("assistant", a.escalate ? "escalated" : a.sources.length ? "answered" : "unanswered");
     bubble("bot",
       a.parts.map((p) => h("p", null, p)),
-      a.links.map((l) => h("a", { class: "btn btn-sm btn-gold", href: l.href, target: "_blank", rel: "noopener" }, l.label)),
+      a.links.map((l) => h("a", { class: "btn btn-sm btn-gold", href: "#savings", onclick: () => {
+        const id = new URL(l.href).searchParams.get("utm_content") || "";
+        if (id.startsWith("crop-")) addToBasket(id.slice(5), 1, true);
+        setChat(false);
+      } }, l.label)),
       a.sources.length ? h("p", { class: "src" }, "Source: " + a.sources.join(" · ")) : null);
   }
   function setChat(open) {
@@ -237,7 +238,7 @@
     chatOpen.setAttribute("aria-expanded", String(open));
     chatOpen.hidden = open;
     if (open) {
-      if (!chatLog.children.length) bubble("bot", h("p", null, "Hi! I'm MEOD's assistant. I can tell you what's being harvested, find a group-buy pickup and suggest recipes."));
+      if (!chatLog.children.length) bubble("bot", h("p", null, "Hi! I'm Tyllage's assistant. I can tell you what's being harvested, find a group-buy pickup and suggest recipes."));
       chatInput.focus();
     } else chatOpen.focus();
   }
@@ -252,46 +253,178 @@
     chatInput.value = "";
   });
 
-  /* ---------- fresh deals: basket builder, bundles, survey ---------- */
-  const basketForm = document.getElementById("basket-form");
-  document.getElementById("basket-likes").replaceChildren(...M.featuredCrops().map((c) =>
-    h("label", { class: "chip" }, h("input", { type: "checkbox", name: "like", value: c.id }), " " + c.name)));
+  /* ---------- your weekly veggie savings (Smart Value) ---------- */
+  const savingsForm = document.getElementById("savings-form");
+  const qty = { "nai-bai": 2, "xiao-bai-cai": 2 }; // starts as the small basket a S$10 delivery fee hurts most
+  const basketBtn = document.querySelector('.nav-actions a[href="#savings"]');
+  const offer = M.arm();
+  let lastOrder = null;
 
-  function renderBasket() {
-    const fd = new FormData(basketForm);
-    const mode = fd.get("mode"), size = Number(fd.get("hh"));
-    const b = M.basket({ size, liked: fd.getAll("like"), mode });
-    const D = M.DELIVERY;
-    const other = M.basket({ size, liked: fd.getAll("like"), mode: mode === "home" ? "pickup" : "home" });
-    // replaceChildren() would print a null as "null", so build the list and drop empty items.
-    document.getElementById("basket").replaceChildren(...[
-      h("h3", null, "Your week of greens"),
-      h("ul", { class: "basket-lines" }, b.lines.map((l) => h("li", null,
-        h("span", null, h("strong", null, l.c.name), " · " + l.grams + " g", l.recipe ? h("span", { class: "muted small" }, " — try " + l.recipe.title) : null),
-        h("span", null, M.money(l.cents))))),
-      h("dl", { class: "basket-sum" },
-        h("dt", null, "Vegetables"), h("dd", null, M.money(b.subtotal)),
-        h("dt", null, mode === "home" ? "Home delivery" : "Group-buy pickup"), h("dd", null, b.e.fee ? M.money(b.e.fee) : "No delivery fee"),
-        h("dt", { class: "total" }, "You pay"), h("dd", { class: "total" }, M.money(b.e.customerPays))),
-      mode === "home" && b.gap ? h("p", { class: "nudge" }, `Add ${M.money(b.gap)} more for free delivery, or choose group-buy pickup and pay ${M.money(other.e.customerPays)}.`) : null,
-      mode === "pickup" ? h("p", { class: "nudge good" }, `Home delivery for this basket would be ${M.money(other.e.customerPays)}.`) : null,
-      h("div", { class: "crop-actions" },
-        h("a", { class: "btn btn-sm btn-gold", target: "_blank", rel: "noopener", href: M.utm("tyllage", "landing-page", "fresh-deals", "basket-" + mode), onclick: () => M.track("basket_click", mode) }, "Shop this on MEOD Fresh ↗"),
-        mode === "pickup" ? h("a", { class: "btn btn-sm btn-outline", href: "#collect" }, "Find my pickup") : null,
-        h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => {
-          M.state.subs.push({ size, mode, crops: b.lines.map((l) => l.c.id), at: new Date().toISOString() });
-          M.save(); M.track("sub_interest", String(size));
-          toast("Noted! MEOD will count you as interested in a weekly box. No sign-up or payment.");
-        } }, "I'd like this weekly")),
-      h("p", { class: "form-note" }, `Quantities are a guide for ${size === 6 ? "5+" : size === 4 ? "3–4" : "1–2"} people. Prices are demo prices.`)].filter(Boolean));
+  function addToBasket(id, packs, quiet) {
+    qty[id] = Math.min(12, (qty[id] || 0) + (packs || 1));
+    renderSavings();
+    if (!quiet) toast(M.crop(id).name + " added. Your total is under Savings.");
   }
-  basketForm.addEventListener("change", renderBasket);
 
+  const QUICK = [
+    { label: "Small top-up", qty: { "nai-bai": 2, "xiao-bai-cai": 2 } },
+    { label: "1–2 people", size: 2 }, { label: "3–4 people", size: 4 }, { label: "5+ people", size: 6 }
+  ];
+  document.getElementById("quick-fill").replaceChildren(...QUICK.map((q) => h("button", { type: "button", class: "chip", onclick: () => {
+    Object.keys(qty).forEach((k) => delete qty[k]);
+    if (q.qty) Object.assign(qty, q.qty);
+    else M.basket({ size: q.size, liked: [], mode: "pickup" }).lines.forEach((l) => { qty[l.c.id] = Math.max(1, Math.round(l.grams / M.PACK_G)); });
+    M.track("quick_fill", q.label);
+    renderSavings();
+  } }, q.label)));
+
+  function qtyRow(c) {
+    const n = qty[c.id] || 0, p = M.ourPack(c);
+    const step = (d) => () => { qty[c.id] = Math.max(0, Math.min(12, n + d)); renderSavings(); };
+    return h("li", { class: n ? "on" : null },
+      h("span", { class: "qty-name" }, h("strong", null, c.name), h("span", { class: "muted small" }, M.money(p.cents) + " · " + M.money(Math.round((p.cents * 100) / p.pack)) + "/100 g")),
+      h("span", { class: "stepper" },
+        h("button", { type: "button", "aria-label": "One less " + c.name, disabled: !n, onclick: step(-1) }, "−"),
+        h("output", { "aria-label": c.name + " packs" }, String(n)),
+        h("button", { type: "button", "aria-label": "One more " + c.name, onclick: step(1) }, "+")));
+  }
+
+  function renderSavings() {
+    const fd = new FormData(savingsForm);
+    const mode = fd.get("mode"), voucher = Number(fd.get("voucher"));
+    const postal = String(fd.get("postal") || "").trim();
+    const co = M.checkout({ qty, mode, voucher });
+    const fu = M.fulfilment({ qty, postal: /^\d{6}$/.test(postal) ? postal : "", voucher });
+    const other = mode === "home" ? fu.pick : fu.home;
+    const featured = M.featuredCrops();
+    document.getElementById("qty-list").replaceChildren(...featured.concat(M.CROPS.filter((c) => qty[c.id] && !featured.includes(c))).map(qtyRow));
+    basketBtn.textContent = co.goods ? "My basket · " + M.money(co.total) : "Check my savings";
+
+    // The full checkout total: vegetables, bundle saving, fulfilment and any voucher.
+    const voucherLine = voucher ? (co.voucherOk ? M.money(-co.voucherOff) : "Needs a " + M.money(M.VOUCHER_MIN) + " basket") : "None";
+    document.getElementById("checkout").replaceChildren(...[
+      h("span", { class: "eyebrow dark" }, "Estimated checkout total"),
+      h("strong", { class: "big-total" }, M.money(co.total)),
+      co.goods ? h("dl", { class: "basket-sum" },
+        h("dt", null, "Vegetables"), h("dd", null, M.money(co.subtotal)),
+        co.bundleOff ? [h("dt", null, "Bundle saving"), h("dd", { class: "save" }, M.money(-co.bundleOff))] : null,
+        h("dt", null, mode === "home" ? "Home delivery" : "Group-buy pickup"), h("dd", null, co.fee ? M.money(co.fee) : "S$0.00"),
+        h("dt", null, "Voucher"), h("dd", { class: co.voucherOk ? "save" : null }, voucherLine),
+        h("dt", { class: "total" }, "You pay"), h("dd", { class: "total" }, M.money(co.total))) : h("p", { class: "muted" }, "Your basket is empty. Pick a starting point or add some greens."),
+      co.goods && other.total !== co.total ? h("p", { class: "nudge" + (other.total > co.total ? " good" : "") },
+        other.total > co.total ? `${mode === "home" ? "Pickup" : "Home delivery"} would cost ${M.money(other.total)}. You're saving ${M.money(other.total - co.total)}.`
+          : `Pickup would cost ${M.money(other.total)}, ${M.money(co.total - other.total)} less.`) : null,
+      !co.pickupOk ? h("p", { class: "form-error" }, `Group-buy leaders pack baskets from ${M.money(M.PICKUP_MIN)}. Add a little more or choose delivery.`) : null,
+      h("button", { class: "btn btn-forest", type: "button", disabled: !co.goods || !co.pickupOk, onclick: () => {
+        lastOrder = M.placeOrder({ qty, mode, voucher });
+        if (lastOrder) { renderAfterOrder(); document.getElementById("after-order").scrollIntoView({ block: "nearest" }); toast("Demo order placed. Nothing was charged."); }
+      } }, "Place demo order"),
+      h("p", { class: "form-note" }, voucher ? "The voucher is hypothetical and not an active offer. " : "", "Assumes no extra group-buy collection charge.")].filter(Boolean));
+
+    // Smart fulfilment: the cheapest practical option for this basket and postal code.
+    document.getElementById("fulfil").replaceChildren(...[
+      h("h3", null, "Cheapest practical way to get it ", UI.aiPill()),
+      h("ul", { class: "fulfil-list" }, fu.options.map((o) => h("li", { class: (o.id === fu.best ? "best" : "") + (o.ok ? "" : " off") },
+        h("span", null, h("strong", null, o.label), h("span", { class: "muted small block" }, o.detail)),
+        h("strong", null, co.goods ? M.money(o.total) : "—")))),
+      co.goods ? h("p", { class: "nudge good" }, fu.why) : null,
+      co.goods && fu.best !== mode ? h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => {
+        savingsForm.querySelector(`input[name=mode][value=${fu.best}]`).checked = true;
+        M.track("fulfil_switch", fu.best);
+        renderSavings();
+      } }, "Switch to " + (fu.best === "pickup" ? "pickup" : "home delivery")) : null].filter(Boolean));
+
+    renderCompare(co);
+  }
+
+  function renderCompare(co) {
+    const box = document.getElementById("compare");
+    if (!co.lines.length) { box.replaceChildren(h("h3", null, "Price check"), h("p", { class: "muted" }, "Add vegetables to compare prices.")); return; }
+    const cmp = co.lines.map((l) => M.compareCrop(l.c));
+    const bc = M.basketCompare(co.lines);
+    const cell = (x, r) => {
+      const hit = x.rows.filter((row) => row.retailer === r.id).sort((a, b) => (b.like - a.like) || (a.per100 - b.per100))[0];
+      if (!hit) return h("span", { class: "muted" }, "Not stocked");
+      return h("span", null, M.money(Math.round(hit.per100)), h("span", { class: "muted small block" }, (hit.like ? "Local" : "Imported, not like-for-like") + (hit.verified ? " · checked " + hit.checked : " · not checked yet")));
+    };
+    box.replaceChildren(
+      h("h3", null, "Price check: per 100 g, like for like"),
+      h("div", { class: "table-wrap" }, h("table", { class: "data-table compact" },
+        h("thead", null, h("tr", null, h("th", { scope: "col" }, "Vegetable"), h("th", { scope: "col", class: "num" }, "Tyllage"), M.RETAILERS.map((r) => h("th", { scope: "col", class: "num" }, r.name)), h("th", { scope: "col" }, "Verdict"))),
+        h("tbody", null, cmp.map((x) => h("tr", null,
+          h("td", { "data-label": "Vegetable" }, x.c.name),
+          h("td", { class: "num", "data-label": "Tyllage" }, M.money(Math.round(x.mine)), h("span", { class: "muted small block" }, "Local · picked on delivery day")),
+          M.RETAILERS.map((r) => h("td", { class: "num", "data-label": r.name }, cell(x, r))),
+          h("td", { "data-label": "Verdict" }, h("span", { class: "pill " + x.verdict.tone, title: x.verdict.text }, x.verdict.label))))))),
+      h("p", { class: "compare-sum" }, h("strong", null, "Same grams of local veg: "),
+        bc.map((b, i) => [i ? " · " : "", b.r.name + " " + (b.complete ? M.money(b.cents) : b.missing === co.lines.length ? "no local match" : M.money(b.cents) + " (no local match for " + b.missing + ")")]),
+        " · ", h("strong", null, "Tyllage " + M.money(co.subtotal)), " before fulfilment."),
+      h("p", { class: "form-note" }, "Imported vegetables are often cheaper, so we only call a price 'cheaper' against Singapore-grown produce in a similar pack size. Supermarket and wet-market prices here are placeholders, not checked."));
+  }
+
+  // After a purchase: the retention offer and a one-tap repeat order.
+  function renderAfterOrder() {
+    const box = document.getElementById("after-order");
+    const L = M.loyalty();
+    const crop = M.crop(Object.keys(lastOrder.qty).find((k) => lastOrder.qty[k] > 0));
+    const recipe = crop && M.RECIPES.find((r) => r.crop === crop.id);
+    const done = L.qualifying % L.r.every;
+    box.hidden = false;
+    box.replaceChildren(...[
+      h("h3", null, "Order " + lastOrder.id + " placed ", h("span", { class: "muted small" }, "(demo, nothing charged)")),
+      h("p", null, `You paid ${M.money(lastOrder.total)} with ${lastOrder.mode === "home" ? "home delivery" : "group-buy pickup"}.`),
+      h("div", { class: "loyalty-track", role: "img", "aria-label": `${done} of ${L.r.every} qualifying orders` },
+        Array.from({ length: L.r.every }, (_, i) => h("span", { class: i < done ? "on" : null }))),
+      h("p", null, L.rewardNow ? h("strong", null, `Your next qualifying order is ${M.money(L.r.amount)} off.`)
+        : (lastOrder.goods < L.r.min ? `This order was under ${M.money(L.r.min)}, so it doesn't count yet. ` : "") + `${L.toNext} more qualifying order${L.toNext === 1 ? "" : "s"} (${M.money(L.r.min)}+) and the last one is ${M.money(L.r.amount)} off.`,
+        h("span", { class: "muted small block" }, "Illustrative reward, sized so it still pays for itself.")),
+      recipe ? h("p", { class: "muted" }, "Use it up: " + recipe.title + " (" + recipe.mins + " min).") : null,
+      h("div", { class: "crop-actions" },
+        h("button", { class: "btn btn-sm btn-forest", type: "button", onclick: () => {
+          lastOrder = M.placeOrder({ qty: lastOrder.qty, mode: lastOrder.mode, voucher: 0, repeat: true });
+          renderAfterOrder();
+          toast("Next week's order placed (demo).");
+        } }, "Order the same next week"),
+        h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => {
+          M.track("reminder_optin", lastOrder.mode);
+          toast("We'd remind you the day before the cutoff. Nothing was set up in this prototype.");
+        } }, "Remind me before the cutoff"))].filter(Boolean));
+  }
+
+  // Offer test: this browser always sees the same one of three offers.
+  function renderOffer() {
+    if (!sessionStorage.getItem("tg-offer")) {
+      try { sessionStorage.setItem("tg-offer", "1"); } catch (e) { /* ignore */ }
+      M.track("offer_view", offer.id);
+    }
+    const pickup = () => { savingsForm.querySelector("input[name=mode][value=pickup]").checked = true; };
+    const act = {
+      A: { cta: "Add the bundle", run: () => { const b = M.bundles()[0]; if (b) b.items.forEach((x) => addToBasket(x.c.id, Math.round(x.grams / M.PACK_G), true)); pickup(); renderSavings(); } },
+      B: { cta: "Find my pickup", run: () => { pickup(); renderSavings(); savingsForm.postal.focus(); } },
+      C: { cta: "How it works", run: () => { const r = M.loyalty().r; toast(`Every ${r.every}th order of ${M.money(r.min)}+ is ${M.money(r.amount)} off. Illustrative.`); } }
+    }[offer.id];
+    document.getElementById("offer-banner").replaceChildren(
+      h("span", { class: "pill good" }, offer.name),
+      h("p", null, offer.pitch),
+      h("button", { class: "btn btn-sm btn-gold", type: "button", onclick: () => { M.track("offer_click", offer.id); act.run(); } }, act.cta));
+  }
+  savingsForm.addEventListener("change", renderSavings);
+  savingsForm.addEventListener("submit", (e) => e.preventDefault());
+  savingsForm.postal.addEventListener("input", () => {
+    const v = savingsForm.postal.value.trim();
+    if (!v || /^\d{6}$/.test(v)) renderSavings();
+  });
+
+  /* ---------- fresh deals: bundles, survey ---------- */
   document.getElementById("bundle-grid").replaceChildren(...M.bundles().map((bd) => h("article", { class: "card bundle" },
     h("h4", null, bd.name),
     h("p", null, bd.items.map((x) => x.grams + " g " + x.c.name).join(" + ")),
     h("p", null, h("strong", { class: "price" }, M.money(bd.price)), " ", h("s", { class: "muted" }, M.money(bd.full))),
-    h("a", { class: "btn btn-sm btn-gold", target: "_blank", rel: "noopener", href: M.utm("tyllage", "landing-page", "fresh-deals", "bundle"), onclick: () => M.track("bundle_click", bd.name) }, "Get the bundle ↗"))));
+    h("a", { class: "btn btn-sm btn-gold", href: "#savings", onclick: () => {
+      M.track("bundle_click", bd.name);
+      bd.items.forEach((x) => addToBasket(x.c.id, Math.round(x.grams / M.PACK_G), true));
+      toast("Bundle added. The saving shows in your total.");
+    } }, "Add the bundle"))));
 
   const survey = document.getElementById("survey");
   survey.addEventListener("submit", (e) => {
@@ -303,7 +436,7 @@
     M.state.survey.push({ ...ans, at: new Date().toISOString() });
     M.save(); M.track("survey", "");
     survey.reset();
-    toast("Thanks! That helps MEOD decide between cheaper pickup and delivery.");
+    toast("Thanks! That helps Tyllage decide between cheaper pickup and delivery.");
   });
 
   /* ---------- coming next: new crop demand test ---------- */
@@ -327,7 +460,8 @@
   renderHarvest();
   renderRecipes();
   renderForYou();
-  renderBasket();
+  renderSavings();
+  renderOffer();
   renderNewCrops();
   renderInterestSummary();
 })();

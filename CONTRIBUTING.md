@@ -8,7 +8,7 @@ If you are not a member of the Tyllage team:
 - **Found a security problem?** Report it privately as described in [SECURITY.md](SECURITY.md). Do not open a public issue.
 - **Interested in licensing, a pilot or a partnership?** Contact the team through the [Tyllage GitHub organisation](https://github.com/Tyllage).
 
-The rest of this guide is for **Tyllage team members** only, working on the Tyllage × MEOD Farm Growth Intelligence prototype. This is a vibecoding project: move fast, but keep it tidy and keep it safe.
+The rest of this guide is for **Tyllage team members** only, working on the Tyllage Growth Intelligence prototype. This is a vibecoding project: move fast, but keep it tidy and keep it safe.
 
 ## Ownership of your work
 
@@ -19,8 +19,8 @@ Do not copy Tyllage code into personal projects, other repositories or public pl
 ## Getting started
 
 ```bash
-git clone https://github.com/Tyllage/Tyllage-MEOD-Vibecode-1.git
-cd Tyllage-MEOD-Vibecode-1
+git clone https://github.com/Tyllage/Tyllage-Tyllage-Vibecode-1.git
+cd Tyllage-Tyllage-Vibecode-1
 py -m http.server 5173
 ```
 
@@ -37,13 +37,13 @@ To start with fresh data, use **Farm view → Settings → Reset demo data**, or
 ## Code conventions
 
 - **Plain HTML, CSS and JavaScript.** No frameworks or bundlers unless the team agrees.
-- JS files are self-contained IIFEs. `data.js` exposes `window.MEOD` (data, rules, core decision logic, state); `intel.js` and `insights.js` add the intelligence engine to `window.MEOD`; `ui.js` exposes `window.UI` (DOM helpers). Load order: `data.js → intel.js → insights.js → ui.js → site.js` or `data.js → intel.js → insights.js → ui.js → growth.js`.
+- JS files are self-contained IIFEs. `data.js` exposes `window.TY` (data, rules, core decision logic, state); `intel.js`, `insights.js` and `value.js` (Smart Value & Demand Engine) add the intelligence engine to `window.TY`; `ui.js` exposes `window.UI` (DOM helpers). Load order: `data.js → intel.js → insights.js → value.js → ui.js → site.js` or `… → value.js → ui.js → growth.js`.
 - **Never put data into `innerHTML`.** Build DOM with `UI.h()` (and `UI.s()` for SVG), which only ever sets `textContent`.
 - **Never pass `null` to `replaceChildren()`**: it prints "null". Build the list and `.filter(Boolean)` first.
 - **Prices and promotions are deterministic.** Any offer, bundle or box goes through `orderEconomics()` and Margin Guard; AI ranks and explains, it never sets a price.
 - **Decision logic lives in `js/data.js`, `js/intel.js` and `js/insights.js`**, not in the views. Views call `plantingVerdict()`, `forecastRead()`, `strategy()`, `rfm()`, `answer()` and so on, so the logic can move to a server later.
 - **Every AI-assisted screen gets a `howNote(now, later)`** saying what it does today and what changes with real data or an LLM. An LLM may only rephrase or draft from facts Tyllage already has; it never adds figures.
-- Money is **integer cents**. Format it only with `MEOD.money()`.
+- Money is **integer cents**. Format it only with `TY.money()`.
 - Business rules (thresholds, rates, distances) live in `RULES` in `js/data.js`. Don't hard-code them elsewhere. If staff should be able to tune one, add it to `FIELDS` in the Settings view.
 - **AI features:** mark them with `aiPill()` / `aiTitle()` so every one carries the same *AI-assisted* pill. Show how a suggestion was worked out (a **Why?** panel built with `why(steps)`), say so when the data can't answer, and never let a suggestion post, message or change anything on its own.
 - **Demand evidence has a ranking:** paid repeat orders > paid first orders > registered interest > visits > likes. Don't build a feature that treats interest or reach as demand.
@@ -55,7 +55,7 @@ To start with fresh data, use **Farm view → Settings → Reset demo data**, or
 ## Data rules
 
 - **Synthetic data only.** Pseudonymous leader IDs (`PG-01`), made-up quantities and prices.
-- Never paste real MEOD customer, order, sales, WhatsApp or analytics data into the repo, issues, screenshots or AI tools.
+- Never paste real Tyllage customer, order, sales, WhatsApp or analytics data into the repo, issues, screenshots or AI tools.
 - Store the least possible: the consumer page keeps only the postal **sector**, never a full postal code or contact details.
 
 ## Before you open a PR

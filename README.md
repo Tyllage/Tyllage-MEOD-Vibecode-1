@@ -1,21 +1,34 @@
-# Tyllage × MEOD Farm — Growth Intelligence (Vibecode 1)
+# Tyllage — Smart Value & Demand Engine (Vibecode 1)
 
-A clickable prototype for **MEOD Farm** that answers one question:
+A clickable prototype for **Tyllage**, our own brand of Singapore-grown vegetables. It starts from one commercial question:
 
-> *"If we grow another 100 kg of vegetables next month, who is actually going to buy them?"*
+> *Why would someone in Singapore stop buying vegetables at the supermarket or wet market downstairs and order from us instead?*
 
-Most farms work **grow → find buyers → sell**. This prototype tries part of it the other way round: **attract customers → convert them → keep them → validate demand → plan production with confidence.** Tyllage stays MEOD's technology partner, a frontman for helping the farm grow, not a middleman selling its vegetables. Customers see MEOD, trust MEOD and buy from MEOD Fresh.
+Being locally grown isn't enough on its own. Shoppers compare prices (YouGov's 2025 Singapore grocery research, as reported by Marketing-Interactive: about 7 in 10 look for the lowest price in a category and 74% would switch supermarket for better prices), they like picking their own produce, and online grocery wins on convenience and exclusive discounts. So the prototype tackles four barriers: **price, convenience, trust in freshness and habit**.
 
-It has two parts:
+The problem it starts from: someone who wants S$12 of vegetables pays **S$22** with our S$10 delivery fee below S$60. If they can walk downstairs, they won't. Neighbourhood **group-buy pickup** removes the fee, and that's the opening.
 
-1. **Consumer page (`index.html`): *This Week at MEOD*.** A MEOD-branded, mobile-first page that shows this week's harvest, suggests recipes using only produce that's actually available, recommends a new green based on what you usually buy, finds the nearest **group-buy collection point** from a postal code, lets households tell the farm what they'd buy regularly (*Help shape our next harvest*), and has an **Ask MEOD** assistant. Every store link is UTM-tagged so MEOD Fresh can attribute visits.
-2. **Farm view (`growth.html`): *Growth Intelligence Hub*.** Seventeen pages for MEOD staff, grouped around three questions:
-   - **1 · Win customers**: *how do we convince more people to buy Singapore-grown produce?* Customer journey, Promotions & budget, Campaign Studio, Experiments, SEO, Trends & partners, Farm stories.
-   - **2 · Keep customers**: *how do we turn first-time buyers into consistent customers?* Customers, Loyalty & boxes, Feedback, Neighbourhoods, Inbox.
-   - **3 · Grow the farm**: *how do we use that demand to expand production with confidence?* Demand → Planting, New crops.
-   - Plus **Overview**, **Strategy** and **Settings**.
+The direction is **Smart Value → Repeat customers → Verified demand → Farm growth**:
 
-The goal isn't more views, likes or followers. It's more **paying customers**, **recurring demand**, and **better decisions about how much to grow**. All ten AI features below serve that.
+1. **Consumer page (`index.html`).** Opens with *Your weekly veggie savings*: build a basket, see the **full checkout total** (vegetables, bundle saving, pickup or delivery, an optional *hypothetical* voucher), the **cheapest practical way to get it** for your postal code, and a **like-for-like price check** per 100 g against local vegetables at Supermarket A/B and the wet market. Place a demo order, get the retention offer (loyalty progress, recipe, reminder) and **order the same next week** in one tap. Below that: this week's harvest, bundles, recipes, pickups, new crops and the *Ask Tyllage* assistant. Everything adds to the same basket.
+2. **Team view (`growth.html`).** Grouped along the chain:
+   - **1 · Smart Value:** Value engine (the chain and the journey), Price check, Offers & margin, Fulfilment, Offer test, Customer journey.
+   - **2 · Repeat customers:** Habits & rewards, Customers, Loyalty & boxes, Feedback, Neighbourhoods, Inbox.
+   - **3 · Demand → Growth:** Verified demand, Demand → Planting, New crops.
+   - **Marketing:** Promotions & budget, Campaign Studio, Experiments, SEO, Trends & partners, Farm stories. Plus **Overview**, **Strategy** and **Settings**.
+
+## Smart Value & Demand Engine
+
+| | Function | In this prototype | Before it's real | Where |
+|---|---|---|---|---|
+| A | **Smart basket price comparison** | S$/100 g against Supermarket A/B and the wet market; only Singapore-grown produce in a similar pack size counts as like-for-like; each price shows its source and date or "not checked yet"; editable price book with *Mark checked today* | A small catalogue checked by hand weekly, or a permitted data feed. Don't scrape sites that don't allow it | Consumer *Savings*, hub *Price check* |
+| B | **Voucher & bundle optimiser** | Line-by-line bundle economics (retail → production and packing → fulfilment → discount → contribution), a closed-form price floor, and six offers ranked by 6-month value among those that keep the floor. Editable cost, retail and group-buy prices for the top vegetables | Our real costs, leader commission and delivery costs | Hub *Offers & margin* |
+| C | **Smart fulfilment recommendation** | Pickup vs delivery total for the customer's basket and postal sector; pickup only if one is within 3 km, not nearly full, and the basket is S$8+; table of what each basket size costs the customer and earns us | Real leader windows, capacities and any collection charge | Consumer *Savings*, hub *Fulfilment* |
+| D | **Habit & rewards intelligence** | One-tap repeat order, cutoff reminders, recipe after each order; loyalty reward (S$3 off every 4th S$15+ order) checked against a holdout so it must pay for itself | A real holdout on our own customers | Consumer *after order*, hub *Habits & rewards* |
+| E | **Demand-backed production planner** | New vs repeat orders from the savings checker, recurring kg per crop, spare supply after commitments; flags "investigate growing more" only when recurring demand keeps rising past spare supply and the margin holds | Orders tagged by offer and channel | Hub *Verified demand* → *Demand → Planting* |
+| | **Offer test (A/B/C)** | Cheaper basket vs Convenience vs Loyalty: clicks, first orders, repeat orders, cost per customer, 8-week value, two-proportion z-test. Each browser always sees the same offer | Random assignment of real visitors, run to the planned sample size | Consumer offer banner, hub *Offer test* |
+
+Every price, floor, saving and recommendation comes from fixed formulas in `js/value.js`. Nothing is invented by a language model. **All supermarket and wet-market prices are placeholders; our costs are demo values.** The figures we need first, for our top five vegetables: production cost, retail price, group-buy price, leader commission and allocated delivery cost.
 
 ## The 10 AI features
 
@@ -23,28 +36,28 @@ The goal isn't more views, likes or followers. It's more **paying customers**, *
 |---|---|---|---|---|
 | 1 | **Growth Strategy Advisor** | Ranks moves (expand to a similar area, production trial, fix a leaky pickup, shift budget, win back customers, fix margin). Each explanation is written only from the figures listed under *Evidence* | LLM explanations grounded in the same verified analytics | Strategy |
 | 2 | **Social Media Campaign Studio** | Suggests objective, audience, channel, timing and kg cap; drafts Instagram, Facebook, TikTok/Reels and WhatsApp posts for three angles (recipe, farm story, intro bundle) with caption checks; approval queue | LLM drafts from the same farm data; results fed back into suggestions | Campaign Studio |
-| 3 | **SEO & Search Opportunity Advisor** | Clusters search queries by topic and flags high-opportunity clusters; content gaps; outlines a useful page from approved facts; imports a Search Console CSV in the browser | Search Console API with MEOD's authorisation; AI-assisted page prose | SEO |
+| 3 | **SEO & Search Opportunity Advisor** | Clusters search queries by topic and flags high-opportunity clusters; content gaps; outlines a useful page from approved facts; imports a Search Console CSV in the browser | Search Console API with Tyllage's authorisation; AI-assisted page prose | SEO |
 | 4 | **Customer Segmentation & Churn** | RFM segments (Champions, Loyal, New, Needs attention, At risk, Hibernating); "likely lapsing" when a customer is 1.5× past *their own* usual gap; consent-aware next step | Predictive churn model once there are 6+ months of purchases | Customers |
 | 5 | **Demand-to-Planting Forecaster** | Trend forecast with an 80% range and a backtest; forecast confidence; trial size; "grow something different?" crop-mix check | Seasonal time-series model on full sales and group-buy orders, scored weekly | Demand → Planting |
 | 6 | **Personalised Vegetable & Recipe Recommender** | Content-based: cooking style, taste and spare harvest; only crops that are available and pass Margin Guard; a matching recipe | Order-history personalisation; collaborative filtering later | Consumer page → *Try something new* |
 | 7 | **Neighbourhood Demand Intelligence** | Opportunity score (0–100), area types (Growing & loyal, Untapped, Leaky, Saturated, Stable), crop mix per pickup with groups under 5 hidden, interest without a pickup | Clustering on purchase patterns; per-area forecasts | Neighbourhoods |
 | 8 | **Campaign Experiment Optimiser** | Extra orders over the usual and extra contribution per campaign; two-proportion z-tests; a sample-size planner for the next test | Holdout groups for true incremental orders; adaptive budget allocation | Experiments |
-| 9 | **Customer Engagement Assistant** | *Ask MEOD*: keyword retrieval over approved FAQ plus live harvest, recipe and pickup data; logs purchase intent; hands complaints, refunds, health and bulk orders to staff; removes phone numbers, emails and full postal codes | Retrieval-augmented generation on MEOD's authorised chat channels, same hand-over rules | Consumer page, Inbox |
+| 9 | **Customer Engagement Assistant** | *Ask Tyllage*: keyword retrieval over approved FAQ plus live harvest, recipe and pickup data; logs purchase intent; hands complaints, refunds, health and bulk orders to staff; removes phone numbers, emails and full postal codes | Retrieval-augmented generation on Tyllage's authorised chat channels, same hand-over rules | Consumer page, Inbox |
 | 10 | **Farm Storytelling Assistant** | Drafts from approved farm records only, in three tones; every fact must be ticked as verified before it can go for approval | LLM storytelling from the same records, with the fact checklist kept | Farm stories |
 
 ## 12 more AI features, plus Smart Savings
 
 | # | Feature | In this prototype | Next, with real data | Where |
 |---|---|---|---|---|
-| 11 | **Conversion & Customer Journey Analyst** | Checkout funnel by cart size; flags any step that drops more than 3 standard deviations from its own history and estimates lost orders. Demo: carts under S$60 stop at the S$10 delivery fee | MEOD Fresh analytics with authorisation, checked daily; LLM explanations | Customer journey |
+| 11 | **Conversion & Customer Journey Analyst** | Checkout funnel by cart size; flags any step that drops more than 3 standard deviations from its own history and estimates lost orders. Demo: carts under S$60 stop at the S$10 delivery fee | Tyllage analytics with authorisation, checked daily; LLM explanations | Customer journey |
 | 12 | **Neighbourhood Opportunity Finder** | Campaign visits vs orders vs pickup awareness per area; separates "low awareness" from "low conversion" | Geographic clustering on aggregated data | Neighbourhoods |
 | 13 | **Basket Builder** | Household size + must-haves + complementary greens, sized for a week; shows pickup vs delivery cost and how far from free delivery | Order history, price sensitivity, stock-aware bundles | Consumer page → *Fresh deals* |
 | 14 | **Replenishment Predictor** | Each customer's own reorder gap and usual delivery day; reminder timed before the cutoff; consent only; suggests a promotable crop | Predictive reorder model | Loyalty & boxes |
-| 15 | **Customer Feedback Intelligence** | Groups reviews, complaints, social comments, enquiries and Ask MEOD chats into themes; sentiment from words + ratings; separates growth barriers from product issues. Demo: pickup convenience is the top barrier | Topic clustering, sentiment models, LLM summaries | Feedback |
-| 16 | **New Crop Demand Tester** | "I'm interested" vs "Reserve first harvest (pay at collection)"; trial sized to reservations only; margin check | Refundable deposits on MEOD Fresh; trial-size scenarios | New crops, consumer page → *Coming next* |
+| 15 | **Customer Feedback Intelligence** | Groups reviews, complaints, social comments, enquiries and Ask Tyllage chats into themes; sentiment from words + ratings; separates growth barriers from product issues. Demo: pickup convenience is the top barrier | Topic clustering, sentiment models, LLM summaries | Feedback |
+| 16 | **New Crop Demand Tester** | "I'm interested" vs "Reserve first harvest (pay at collection)"; trial sized to reservations only; margin check | Refundable deposits on Tyllage; trial-size scenarios | New crops, consumer page → *Coming next* |
 | 17 | **Subscription & Retention Designer** | Finds steady buyers, designs weekly/fortnightly boxes priced 5% under separate items (pickup), checks Margin Guard, estimates committed kg | Real cohorts; box demand feeding planting | Loyalty & boxes |
 | 18 | **Seasonal Food Trend Radar** | Interest index vs recipe-link orders; a topic must rise in both before it becomes a campaign | Search/social trend data with authorisation | Trends & partners |
-| 19 | **Creator & Community Matcher** | Topic fit + area fit (pickups with room) + recorded MEOD results; never invents follower counts or engagement | Content classification of real partner content | Trends & partners |
+| 19 | **Creator & Community Matcher** | Topic fit + area fit (pickups with room) + recorded Tyllage results; never invents follower counts or engagement | Content classification of real partner content | Trends & partners |
 | 20 | **Marketing Budget Allocator** | Spends in S$5 steps where the next dollar earns most (6-month value vs cost per buyer incl. staff time), with diminishing returns, 3× past-spend caps and ≤15% on unproven channels | Fitted channel response curves | Promotions & budget |
 | 21 | **Planting Scenario Simulator** | 2,000 simulated weeks of demand and yield for +0–50% production; unsold kg, waste risk, extra contribution. Demo: Nai Bai +10% is the best balance; +50% loses money | Probabilistic forecasts from real sales and yields; real spoilage and clearance | Demand → Planting |
 | 22 | **Customer Lifetime Value & Loyalty Analyst** | 6-month value by acquisition channel (retention × orders × order value × margin) vs cost to acquire | Real cohorts; predictive value model | Loyalty & boxes |
@@ -58,7 +71,7 @@ The idea: make buying from the farm feel like a better deal **without a price wa
   - **Profitability check:** enter normal price, offer price and produce + packing cost, and see contribution and margin for pickup vs home delivery against Margin Guard. With the demo costs, a S$12 → S$10 bundle earns S$1.50 (15%) through pickup but only S$1.00 (10%) by home delivery, so Tyllage suggests testing it **through pickup only**.
   - **Which promotions to test:** group deals, bundles, first-order voucher, loyalty, refer-a-neighbour, pre-orders, Surprise Bags and free delivery, each with its per-order economics, the evidence on repeat buying, and a 6-month value.
   - The **budget allocator** and the **survey results**.
-- Delivery terms (S$10 below S$60, free from S$60) are from MEOD Fresh's published shipping policy and should be re-checked. MEOD's own delivery, drop and packing costs are made up.
+- Delivery terms (S$10 below S$60, free from S$60) are from Tyllage's published shipping policy and should be re-checked. Tyllage's own delivery, drop and packing costs are made up.
 
 Everything is rule-based and runs in the browser. Nothing is sent to an AI service, nothing is posted or messaged, and a person approves every action.
 
@@ -98,23 +111,23 @@ Every push to `main` redeploys automatically.
 
 ---
 
-## Consumer page — This Week at MEOD
+## Consumer page — This Week at Tyllage
 
 | Section | What's on it |
 |---|---|
 | **Hero** | "Fresh from the farm. Made for your table." with the current week, plus delivery facts (Tue / Thu / Sat, free from S$60, or collect from a group buy) |
-| **This week's harvest** | Crop cards chosen by Tyllage: only crops with enough **uncommitted** harvest to sell and a margin above the Margin Guard floor, most spare first. Each shows harvest day, kg still available, *Buy on MEOD Fresh ↗* (tracked link) and *Recipes* |
+| **This week's harvest** | Crop cards chosen by Tyllage: only crops with enough **uncommitted** harvest to sell and a margin above the Margin Guard floor, most spare first. Each shows harvest day, kg still available, *Buy on Tyllage ↗* (tracked link) and *Recipes* |
 | **Fresh deals near you** | Pickup vs home delivery, the basket builder (household + must-haves), farm-approved bundles, illustrative first-order and referral offers, and a 3-question survey |
 | **Coming next?** | Candidate crops (Red Bayam, Baby Spinach, Kangkong) with *I'm interested* and *Reserve first harvest*. Reservations count separately from interest; nothing is charged |
 | **Try something new** | Tick what you usually buy; get up to two other greens from this week's harvest that cook the same way but taste different, with a recipe and a tracked link |
-| **What should I cook?** | Household size, time to cook and preferences (vegetarian, kid-friendly, no spicy). Recipes are filtered to crops available this week, ranked by spare harvest, and scaled to the household ("about 250 g Nai Bai for 1–2 people"). Each links to the product on MEOD Fresh |
+| **What should I cook?** | Household size, time to cook and preferences (vegetarian, kid-friendly, no spicy). Recipes are filtered to crops available this week, ranked by spare harvest, and scaled to the household ("about 250 g Nai Bai for 1–2 people"). Each links to the product on Tyllage |
 | **Collect from a neighbour** | Enter a 6-digit postal code to see the 3 nearest group-buy pickups (area, distance, day, window, order cutoff). If none is within 3 km, it asks you to register interest instead. *Ask to join* is simulated: nothing is sent |
 | **Help shape our next harvest** | Pick crops, frequency and pickup or delivery; optional postal code; a consent tick. Clearly labelled *not an order*. Only the postal **sector** (first two digits) is stored. A bar list shows what neighbours have asked for (demo numbers plus yours) |
-| **Meet your farmers** | Three short farm stories with MEOD's photos |
+| **Meet your farmers** | Three short farm stories with Tyllage's photos |
 
-The **Ask MEOD** button (bottom right) opens the assistant. Try *What's fresh this week?*, *Pickup near 820123*, *I want to buy 2kg Nai Bai* or *My order was missing items*, then look at the hub's **Inbox**.
+The **Ask Tyllage** button (bottom right) opens the assistant. Try *What's fresh this week?*, *Pickup near 820123*, *I want to buy 2kg Nai Bai* or *My order was missing items*, then look at the hub's **Inbox**.
 
-The **Farm view** button in the nav opens the hub. The footer and a top bar say plainly that this is a prototype and not MEOD's live site.
+The **Farm view** button in the nav opens the hub. The footer and a top bar say plainly that this is a prototype and takes no real orders.
 
 ## Farm view — Growth Intelligence Hub
 
@@ -122,15 +135,15 @@ The **Farm view** button in the nav opens the hub. The footer and a top bar say 
 |---|---|
 | **Overview** | Greeting band, KPI tiles (campaign visits, first-time buyers, came back within 28 days, repeat-backed demand in kg/week), **the three questions** with this week's answer to each, the top 5 **Strategy** recommendations, the **attention → dependable demand** funnel, a Demand → Planting summary with forecast confidence, and **From this browser**: live counts of what you did on the consumer page |
 | **Strategy** | Every growth recommendation, ranked, with impact, effort, the evidence behind it and *Plan it* / *Dismiss* |
-| **Campaign Studio** | Pick a crop. Tyllage suggests the objective, audience, channel, theme, offer, maximum kg to promote, posting window and how to measure it, with a tracked link and a **Why?** panel. Pick an angle (recipe, farm story, intro bundle) for editable **Instagram, Facebook, TikTok/Reels and WhatsApp (leader)** drafts with live caption checks. **Submit for MEOD approval** puts it in the approval queue; approving never posts anything. Plus a **tracked link builder** |
+| **Campaign Studio** | Pick a crop. Tyllage suggests the objective, audience, channel, theme, offer, maximum kg to promote, posting window and how to measure it, with a tracked link and a **Why?** panel. Pick an angle (recipe, farm story, intro bundle) for editable **Instagram, Facebook, TikTok/Reels and WhatsApp (leader)** drafts with live caption checks. **Submit for Tyllage approval** puts it in the approval queue; approving never posts anything. Plus a **tracked link builder** |
 | **Experiments** | Each campaign's extra orders over the usual and extra contribution after costs; the **recipe vs discount** test with significance checks; a **planner** for the next test (approaches, buyers needed per approach, weeks at recent pace, past results per approach) |
 | **Farm stories** | Pick an approved farm record (harvest, pest control, planting, weather), choose a tone, get Instagram/Facebook, blog and WhatsApp drafts. *Send for approval* unlocks only when every fact is ticked as verified |
 | **SEO** | Search queries grouped into topic clusters with impressions, clicks, CTR, position and opportunity; **Import Search Console CSV**; content gaps; **Draft a useful page** (an outline built from approved facts); a **page title & description checker**. Demo search volumes are made up |
 | **Customers** | RFM segments with a next step for each; **likely lapsing** customers with a consent-aware suggestion and channel; new buyers by channel; harvest-interest answers from this browser |
 | **Neighbourhoods** | Area types; every pickup with an 8-week sparkline, households vs capacity, trend, returning share, **opportunity score**, type and suggested action; **what each area buys** (groups under 5 shown as "<5"); **interest without a pickup nearby** |
 | **Demand → Planting** | Per crop: expected, committed and what's left for consumer demand; **paid orders with a 4-week forecast** (80% range) against available supply; the **returning-buyer share**; **Tyllage's read** with forecast confidence and reasoning; **Grow more, or grow something different?**; all crops. *Accept* / *Not now* are logged; Tyllage never changes a planting plan |
-| **Inbox** | What customers asked *Ask MEOD*: questions handed to staff (mark resolved), purchase intent by crop, and questions it couldn't answer (candidates for new FAQ answers or pages) |
-| **Customer journey** | Unusual drops in the MEOD Fresh checkout funnel with an explanation and a suggested test; where visitors leave, by cart size |
+| **Inbox** | What customers asked *Ask Tyllage*: questions handed to staff (mark resolved), purchase intent by crop, and questions it couldn't answer (candidates for new FAQ answers or pages) |
+| **Customer journey** | Unusual drops in the our checkout funnel with an explanation and a suggested test; where visitors leave, by cart size |
 | **Promotions & budget** | Promotion profitability check, which promotions to test, marketing budget allocator, survey answers |
 | **Trends & partners** | Seasonal trend radar and the creator & community matcher |
 | **Loyalty & boxes** | Lifetime value by channel, customers ready to reorder, weekly/fortnightly box designs |
@@ -164,30 +177,30 @@ The demo crops are set up so each verdict appears at least once (Nai Bai → tes
 
 Strategy also picks up the checkout drop (Customer journey) and the top feedback barrier.
 
-Every AI-assisted screen carries the same **AI-assisted** pill, a **Why?** or **Evidence** panel, and a short **Now / With real data** note saying what it does today and what would change with MEOD's real data or an LLM. All of them are rule-based in the prototype: they read the demo records, show how they reached an answer, say so when the data can't answer, and never post, message, change prices or change planting on their own. A person always approves.
+Every AI-assisted screen carries the same **AI-assisted** pill, a **Why?** or **Evidence** panel, and a short **Now / With real data** note saying what it does today and what would change with Tyllage's real data or an LLM. All of them are rule-based in the prototype: they read the demo records, show how they reached an answer, say so when the data can't answer, and never post, message, change prices or change planting on their own. A person always approves.
 
 Evidence is ranked: **paid repeat orders > paid first orders > registered interest or purchase intent > visits > likes.**
 
-### Business rules (illustrative — MEOD to confirm)
+### Business rules (illustrative — Tyllage to confirm)
 
 All of these live in `RULES` in `js/data.js`. Staff can change them in **Settings**.
 
-- **Money** is integer cents per kg. Format it only with `MEOD.money()`.
+- **Money** is integer cents per kg. Format it only with `TY.money()`.
 - **Margin Guard:** contribution margin must be at least 15%. A bundle price must stay at or above cost + 15%.
 - **Planting:** 4 weeks of paid data, demand over supply in 3 of the last 4 weeks, 40%+ returning share, trial capped at 20% of expected harvest.
 - **Collection points:** "room to grow" under 60% full; "retention risk" under 40% returning; "growing" at +10% over 4 weeks; a pickup is "near" within 3 km.
-- **Delivery:** Tue / Thu / Sat, free from S$60, orders close 10pm the night before (taken from MEOD Fresh's public site; MEOD to confirm).
-- **Who does what:** MEOD owns the produce, prices, customers, posts and every decision. Tyllage analyses, recommends, drafts and reports. It never buys or resells produce.
+- **Delivery:** Tue / Thu / Sat, free from S$60, orders close 10pm the night before (taken from Tyllage's public site; Tyllage to confirm).
+- **Who does what:** Tyllage owns the produce, prices, customers, posts and every decision. Tyllage analyses, recommends, drafts and reports. It never buys or resells produce.
 
 ---
 
 ## Project layout
 
 ```
-index.html        consumer page: This Week at MEOD
+index.html        consumer page: This Week at Tyllage
 growth.html       farm view: Growth Intelligence Hub
 
-css/style.css     both pages; design tokens in :root (MEOD palette)
+css/style.css     both pages; design tokens in :root (Tyllage palette)
 
 js/data.js        demo data (crops, recipes, collection points, campaigns, SEO topics,
                   segments), RULES, localStorage state, tracking, and the decision logic:
@@ -195,31 +208,35 @@ js/data.js        demo data (crops, recipes, collection points, campaigns, SEO t
                   recommendCampaign, drafts, captionChecks, nearestPoints
 js/intel.js       intelligence engine: forecasts + backtest, crop mix, RFM + churn signals,
                   recommender, campaign impact + z-tests + sample sizes, neighbourhood
-                  scoring, growth strategy, Ask MEOD retrieval + redaction, farm stories,
+                  scoring, growth strategy, Ask Tyllage retrieval + redaction, farm stories,
                   search clustering + CSV import, SEO page outlines (plus their demo data)
 js/insights.js    insights part 2: journey anomalies, area opportunities, delivery economics,
                   promotion check + menu, basket builder, bundles, replenishment, feedback
                   themes + sentiment, new-crop tester, boxes, trends, partners, lifetime
                   value, budget allocator, planting simulator (plus their demo data)
+js/value.js       Smart Value & Demand Engine: price book + like-for-like comparison, checkout
+                  total, smart fulfilment, unit economics + price floor, offer ranking,
+                  A/B/C offer test, reward check, verified demand, demo orders
 js/ui.js          h() / s() DOM helpers (textContent only), toast, copy, AI pill
-js/site.js        consumer page, Fresh deals, Coming next, Try something new, Ask MEOD
-js/growth.js      farm view: 17 pages in 3 groups, charts, tables, approvals, settings
+js/site.js        consumer page: weekly savings checker, demo order + repeat, harvest, bundles, Ask Tyllage
+js/growth.js      team view: 24 pages in 6 groups, charts, tables, approvals, settings
 
-assets/           MEOD logo (SVG)
+assets/           Tyllage logo (PNG, transparent)
 assets/img/       optimised WebP photos and favicon
 .nojekyll         serve files as-is on GitHub Pages
 ```
 
-**Script order:** `data.js → intel.js → insights.js → ui.js → site.js` on `index.html`, and `data.js → intel.js → insights.js → ui.js → growth.js` on `growth.html`.
+**Script order:** `data.js → intel.js → insights.js → value.js → ui.js → site.js` on `index.html`, and `… → value.js → ui.js → growth.js` on `growth.html`.
 
 **No third-party scripts.** The only external request is Google Fonts (Caveat Brush and Figtree). Charts are hand-drawn SVG.
 
 ## Demo data
 
-- Stored in `localStorage` under `tyllage-growth-demo-v1`: harvest-interest answers, consumer-page activity, *Ask MEOD* questions (contact details removed), campaign and story drafts, strategy and planting decisions, survey answers, new-crop interest and reservations, weekly-box interest, and edited thresholds. An imported Search Console CSV is kept in memory only and is gone when you leave the tab. Each browser has its own copy.
+- Stored in `localStorage` under `tyllage-growth-demo-v1`: harvest-interest answers, consumer-page activity, *Ask Tyllage* questions (contact details removed), campaign and story drafts, strategy and planting decisions, survey answers, new-crop interest and reservations, weekly-box interest, and edited thresholds. An imported Search Console CSV is kept in memory only and is gone when you leave the tab. Each browser has its own copy.
 - The rest (crops, campaigns, collection points, segments) is fixed in `js/data.js`.
 - **Reset:** **Settings → Reset demo data** in the farm view, or clear the site's storage.
-- **Try the loop:** on the consumer page, search a postal code, fill in *Help shape our next harvest* and ask *Ask MEOD* a few questions. Then open the farm view: **Overview → From this browser**, **Customers**, **Neighbourhoods** and **Inbox** pick it up.
+- **Try the Smart Value loop:** on the consumer page, open *Savings*, switch between pickup and home delivery, add a postal code, place a demo order and tap *Order the same next week*. Then open the team view: **Smart Value → Value engine**, **Offer test** and **Demand → Growth → Verified demand** include it.
+- **Try the loop:** on the consumer page, search a postal code, fill in *Help shape our next harvest* and ask *Ask Tyllage* a few questions. Then open the farm view: **Overview → From this browser**, **Customers**, **Neighbourhoods** and **Inbox** pick it up.
 
 ## Responsive breakpoints
 
@@ -234,24 +251,24 @@ assets/img/       optimised WebP photos and favicon
 | ≤ 640 px | Hub tables become labelled cards |
 | ≤ 520 px | *Farm view* button hides from the consumer nav; postal form stacks |
 
-Checked at 375 px, 534 px and 1280 px with no sideways scrolling and no console errors on every tab and the consumer page, including the Ask MEOD panel (27 Oct 2026).
+Checked at 375 px, 534 px and 1280 px with no sideways scrolling and no console errors on every tab and the consumer page, including the Ask Tyllage panel (27 Oct 2026).
 
 ## Path to production
 
 | Prototype | Becomes |
 |---|---|
 | Demo crops and harvest figures in `js/data.js` | Harvest Planner / stock from Tyllage's farm-ops data |
-| `CAMPAIGNS` results | Real attribution: MEOD Fresh (Shopify) orders matched to UTM tags and discount codes |
+| `CAMPAIGNS` results | Real attribution: Tyllage (Shopify) orders matched to UTM tags and discount codes |
 | Interest answers in `localStorage` | Server-side, consented, de-duplicated records with a retention period |
 | Collection points | Group-buy module data (leaders, pickups, orders), shared with leaders' agreement |
-| SEO topics | Google Search Console data for MEOD's own site |
+| SEO topics | Google Search Console data for Tyllage's own site |
 | Drafts and approvals | Server-side approvals with roles; optional publishing through official social APIs later |
-| Ask MEOD keyword retrieval | RAG over the same approved FAQ and live data, on MEOD's authorised chat channels |
-| Trend forecast, RFM cut-offs, z-tests | Models fitted and scored on MEOD's real history; holdout groups for experiments |
+| Ask Tyllage keyword retrieval | RAG over the same approved FAQ and live data, on Tyllage's authorised chat channels |
+| Trend forecast, RFM cut-offs, z-tests | Models fitted and scored on Tyllage's real history; holdout groups for experiments |
 | Farm records in `FARM_LOG` | Greenhouse round records from Tyllage's farm-ops data |
 | Open farm view | Server-side sign-in and role checks |
 
-See [audit.md](audit.md) for the gap list and the questions to validate with MEOD before building further.
+See [audit.md](audit.md) for the gap list and the questions to validate with Tyllage before building further.
 
 ## License and ownership
 
@@ -259,7 +276,7 @@ See [audit.md](audit.md) for the gap list and the questions to validate with MEO
 
 This prototype, including its code, designs, business rules and documentation, is proprietary to Tyllage LLP and is shared under the [Tyllage Proprietary License](LICENSE). No licence is granted to use, copy, modify, deploy or redistribute it without Tyllage's prior written permission. GitHub's Terms of Service let you view and fork public repositories on GitHub; that does not give any further right to use this code.
 
-The MEOD name, logo and photographs belong to MEOD Farm and are used here for demonstration to MEOD only. The fonts loaded from Google Fonts remain under their own licences.
+The Tyllage name, logo and photographs belong to Tyllage and are used here for demonstration to Tyllage only. The fonts loaded from Google Fonts remain under their own licences.
 
 For licensing or partnership enquiries, contact the team through the [Tyllage GitHub organisation](https://github.com/Tyllage).
 

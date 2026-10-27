@@ -3,23 +3,23 @@
    and lifetime value. Deterministic and explainable, like intel.js. Loads after intel.js. */
 (function () {
   "use strict";
-  const M = window.MEOD;
+  const M = window.TY;
 
   /* ---------- demo data (synthetic, illustrative) ---------- */
 
-  // Delivery economics. Customer-facing fee and threshold are from MEOD Fresh's published shipping
-  // policy (check before use); MEOD's own costs are made up.
+  // Delivery economics. Customer-facing fee and threshold are from Tyllage's published shipping
+  // policy (check before use); Tyllage's own costs are made up.
   const DELIVERY = {
     homeFee: 1000,          // charged to the customer below the free-delivery threshold
     freeFrom: 6000,
-    homeCost: 1200,         // what one home delivery costs MEOD (courier/driver), illustrative
+    homeCost: 1200,         // what one home delivery costs Tyllage (courier/driver), illustrative
     dropCost: 2000,         // one consolidated drop to a group-buy leader, illustrative
     dropHouseholds: 20,     // typical households sharing a drop
     leaderRate: 0.05,       // leader commission on net merchandise
     packCost: 80            // packing per order
   };
 
-  // MEOD Fresh checkout funnel, 8 weeks, split by cart size. Rates are step-to-step conversion.
+  // Tyllage checkout funnel, 8 weeks, split by cart size. Rates are step-to-step conversion.
   const JOURNEY = {
     weeks: 8,
     steps: ["Visited", "Viewed a product", "Added to cart", "Started checkout", "Chose delivery", "Paid"],
@@ -89,14 +89,14 @@
     { id: "cook", label: "Knowing how to cook it", re: /how do i cook|how to cook|recipe|never tried|kids like|kids finished/i, barrier: true,
       action: "Recipes work: add one to every unfamiliar crop's page and post." },
     { id: "pack", label: "Packaging", re: /plastic|packaging/i, barrier: false,
-      action: "Ask MEOD whether a lower-plastic pack is possible for pickup orders." },
+      action: "Ask Tyllage whether a lower-plastic pack is possible for pickup orders." },
     { id: "aware", label: "Didn't know about pickup", re: /didn't know|where can i collect|near me/i, barrier: true,
       action: "Awareness gap: leaders and pickup pages, not more product ads." }
   ];
   const POS = /fresh|crunchy|love|great|tasty|sweet|favourite|worth|finished|lasts|good|value/i;
   const NEG = /wilted|yellow|too much|too late|pricey|missed|far|clash|doesn't|don't work|isn't|wish|plastic|expensive/i;
 
-  // Crops MEOD could grow next, with interest vs real reservations (pay at collection).
+  // Crops Tyllage could grow next, with interest vs real reservations (pay at collection).
   const NEW_CROPS = [
     { id: "bayam", name: "Red Bayam", zh: "红苋菜", interest: 46, reserved: 19, kgPerHH: 0.35, price: 1300, cost: 750, weeksToHarvest: 4, img: "" },
     { id: "spinach", name: "Baby Spinach", zh: "嫩菠菜", interest: 61, reserved: 9, kgPerHH: 0.25, price: 2600, cost: 1700, weeksToHarvest: 5, img: "" },
@@ -216,11 +216,11 @@
       { name: "Neighbourhood group deal", why: "Lower effective delivery cost", guard: "Consolidated drop-offs", price: base, mode: "pickup", repeat: 0.63, src: "C-104 group-buy cohort" },
       { name: "Weekly harvest bundle", why: "Easier to buy several vegetables", guard: "Bigger basket, planned packing", price: 1800, costOverride: 1050, mode: "pickup", repeat: 0.45, src: "Recipe-led cohorts" },
       { name: "First-order voucher (S$3 off, once)", why: "Lowers the risk of trying", guard: "One-time, capped", price: base - 300, mode: "pickup", repeat: 0.17, src: "C-102 discount cohort" },
-      { name: "Loyalty rewards (5% back)", why: "Makes repeat buying worthwhile", guard: "Reward sized to margin", price: Math.round(base * 0.95), mode: "pickup", repeat: 0.5, src: "Assumed — no MEOD data yet" },
+      { name: "Loyalty rewards (5% back)", why: "Makes repeat buying worthwhile", guard: "Reward sized to margin", price: Math.round(base * 0.95), mode: "pickup", repeat: 0.5, src: "Assumed — no Tyllage data yet" },
       { name: "Refer-a-neighbour (S$3 each)", why: "Neighbours recruit neighbours", guard: "Paid only after a qualifying purchase", price: base - 300, mode: "pickup", repeat: 0.55, src: "Leader-led cohorts" },
       { name: "Harvest pre-order", why: "First access to fresh harvest", guard: "Demand confirmed before harvest", price: base, mode: "pickup", repeat: 0.45, src: "Pre-order buyers" },
-      { name: "Surprise Harvest Bag", why: "Value and discovery", guard: "Only approved saleable surplus", price: 1000, costOverride: 450, mode: "pickup", repeat: 0.35, src: "Assumed — no MEOD data yet" },
-      { name: "Free home delivery on S$20+", why: "Shopee-style convenience", guard: "None: MEOD absorbs the courier", price: 2000, costOverride: 1170, mode: "home-free", repeat: 0.3, src: "Assumed — no MEOD data yet" }
+      { name: "Surprise Harvest Bag", why: "Value and discovery", guard: "Only approved saleable surplus", price: 1000, costOverride: 450, mode: "pickup", repeat: 0.35, src: "Assumed — no Tyllage data yet" },
+      { name: "Free home delivery on S$20+", why: "Shopee-style convenience", guard: "None: Tyllage absorbs the courier", price: 2000, costOverride: 1170, mode: "home-free", repeat: 0.3, src: "Assumed — no Tyllage data yet" }
     ];
     return items.map((it) => {
       const c = it.costOverride || cost;
@@ -386,7 +386,7 @@
       return { ...p, topicFit, areaFit, evidence, score: topicFit + areaFit + evidence,
         why: [`Topic fit ${topicFit}/40: ${p.topics.join(", ")}${p.topics.some((t) => rising.includes(t)) ? " (rising)" : ""}`,
           `Area fit ${areaFit}/30: ${p.areas.join(", ")}${p.areas.some((a) => room.includes(a)) ? " (pickup has room)" : " (pickups near capacity)"}`,
-          p.past ? `Evidence ${evidence}/30: ${p.past.campaign} brought ${p.past.newBuyers} new buyers, ${M.pct(p.past.repeat)} came back` : "Evidence 0/30: no past results with MEOD yet, so start with a small paid test"] };
+          p.past ? `Evidence ${evidence}/30: ${p.past.campaign} brought ${p.past.newBuyers} new buyers, ${M.pct(p.past.repeat)} came back` : "Evidence 0/30: no past results with Tyllage yet, so start with a small paid test"] };
     }).sort((a, b) => b.score - a.score);
   }
 

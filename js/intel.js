@@ -1,10 +1,10 @@
 /* Tyllage intelligence engine: forecasting, RFM segmentation and churn signals, experiment statistics,
    growth strategy, neighbourhood scoring, recommendations, the engagement assistant and farm stories.
    Everything is deterministic and explainable. Where a real model or an LLM would come later, the
-   function says so in what it returns. Loads after data.js and extends window.MEOD. */
+   function says so in what it returns. Loads after data.js and extends window.TY. */
 (function () {
   "use strict";
-  const M = window.MEOD;
+  const M = window.TY;
 
   /* ---------- extra demo data ---------- */
 
@@ -36,19 +36,19 @@
   // Approved answers for the engagement assistant. It never answers outside these and the live data.
   const KB = [
     { id: "delivery", title: "Delivery", keys: ["deliver", "delivery", "shipping", "when arrive", "free delivery", "minimum"],
-      answer: "MEOD Fresh delivers on Tuesday, Thursday and Saturday. Delivery is free from S$60. Orders close at 10pm the night before." },
+      answer: "Tyllage delivers on Tuesday, Thursday and Saturday. Delivery is free from S$60. Orders close at 10pm the night before." },
     { id: "pickup", title: "Group-buy pickup", keys: ["group buy", "groupbuy", "pickup", "pick up", "collect", "collection", "leader", "near me"],
       answer: "Neighbourhood group-buy leaders receive one delivery and you collect from them. Tell me your 6-digit postal code and I'll find the nearest pickup." },
-    { id: "pesticide", title: "How MEOD grows", keys: ["pesticide", "organic", "chemical", "spray", "how grown", "safe"],
-      answer: "MEOD grows without pesticides and uses helpful insects like ladybirds to control pests. (MEOD's produce is pesticide-free; it isn't certified organic.)" },
+    { id: "pesticide", title: "How Tyllage grows", keys: ["pesticide", "organic", "chemical", "spray", "how grown", "safe"],
+      answer: "Tyllage grows without pesticides and uses helpful insects like ladybirds to control pests. (Tyllage's produce is pesticide-free; it isn't certified organic.)" },
     { id: "storage", title: "Storage", keys: ["store", "storage", "keep", "fridge", "how long", "last"],
       answer: "Keep leafy greens unwashed in a paper towel inside a bag in the fridge. Most stay fresh for 4–7 days. Wash just before cooking." },
     { id: "visit", title: "Farm visits", keys: ["visit", "tour", "school", "workshop", "excursion"],
-      answer: "MEOD runs farm tours, workshops and school visits in Kranji. Groups of up to 200 can be split into sessions. Staff confirm every booking." },
+      answer: "Tyllage runs farm tours, workshops and school visits in Kranji. Groups of up to 200 can be split into sessions. Staff confirm every booking." },
     { id: "payment", title: "Payment", keys: ["pay", "payment", "paynow", "card", "cash"],
-      answer: "You pay when you check out on MEOD Fresh. Group-buy payment is arranged by your leader." },
+      answer: "You pay when you check out on Tyllage. Group-buy payment is arranged by your leader." },
     { id: "lead", title: "Become a leader", keys: ["become leader", "be a leader", "start a group", "host", "commission"],
-      answer: "MEOD is looking for group-buy leaders in areas without a pickup. Leave your area below and a MEOD staff member will follow up." }
+      answer: "Tyllage is looking for group-buy leaders in areas without a pickup. Leave your area below and a Tyllage staff member will follow up." }
   ];
 
   // Synthetic customers, generated the same way every time (seeded), pseudonymous IDs only.
@@ -72,7 +72,7 @@
       const point = r() < 0.65 ? pick(M.POINTS).id : "";
       out.push({
         id: "CU-" + String(i).padStart(3, "0"),
-        point, channel: point ? "Group buy" : "MEOD Fresh",
+        point, channel: point ? "Group buy" : "Tyllage",
         crop: pick(M.CROPS).id, interval, orders, lastDays: last,
         spend: orders * (1500 + Math.round(r() * 45) * 100),
         consent: r() < 0.7
@@ -179,10 +179,10 @@
   const SEGMENT_ACTIONS = {
     Champions: "Invite to register weekly interest (Harvest Club). Their orders are the strongest planting signal.",
     Loyal: "Thank them with an early look at the next harvest. No discount needed.",
-    New: "Welcome series: how MEOD grows, one recipe for what they bought, how to find a pickup.",
+    New: "Welcome series: how Tyllage grows, one recipe for what they bought, how to find a pickup.",
     "Needs attention": "One useful recipe for their usual crop from this week's spare harvest.",
     "At risk": "Personal win-back: their usual crop is back, plus a pickup reminder. Opted-in only.",
-    Hibernating: "Don't chase. One short 'what stopped you?' question tells MEOD more than another offer."
+    Hibernating: "Don't chase. One short 'what stopped you?' question tells Tyllage more than another offer."
   };
 
   function reengage(cu) {
@@ -326,12 +326,12 @@
       impact: `About ${M.money(best.i.incContribution - worst.i.incContribution)} better per campaign`, effort: "Low", href: "#experiments"
     });
 
-    // Win back lapsing customers who agreed to hear from MEOD.
+    // Win back lapsing customers who agreed to hear from Tyllage.
     const lapsing = CUSTOMERS.filter((cu) => rfm(cu).risk === "Likely lapsing" && cu.consent);
     if (lapsing.length) recs.push({
       kind: "Win back", tone: "warn", score: 45 + lapsing.length,
       title: `Re-engage ${lapsing.length} customers drifting away`,
-      text: `${lapsing.length} customers who agreed to hear from MEOD are past 1.5× their usual gap between orders. One relevant recipe for the crop they normally buy is more useful to them than a discount.`,
+      text: `${lapsing.length} customers who agreed to hear from Tyllage are past 1.5× their usual gap between orders. One relevant recipe for the crop they normally buy is more useful to them than a discount.`,
       evidence: [`${lapsing.length} 'Likely lapsing' with consent (Customers)`, `Usual gaps range ${Math.min(...lapsing.map((c) => c.interval))}–${Math.max(...lapsing.map((c) => c.interval))} days`],
       impact: `${lapsing.length} customers`, effort: "Low", href: "#customers"
     });
@@ -386,7 +386,7 @@
 
     if (ESCALATE.test(lower)) {
       out.escalate = true;
-      out.parts.push("I've passed this to a MEOD staff member, who will reply during working hours. I can't handle refunds, complaints, health or bulk orders myself.");
+      out.parts.push("I've passed this to a Tyllage staff member, who will reply during working hours. I can't handle refunds, complaints, health or bulk orders myself.");
       out.sources.push("Escalation rule");
       return out;
     }
@@ -395,7 +395,7 @@
       if (near) {
         out.parts.push("Nearest group-buy pickups:");
         near.forEach((p) => out.parts.push(`• ${p.area} (~${p.km.toFixed(1)} km), ${p.day} ${p.window}`));
-        if (near[0].km > M.rules().nearPointKm) out.parts.push("Neither is very close. You can tell the farm you're interested on this page, so MEOD knows there's demand near you.");
+        if (near[0].km > M.rules().nearPointKm) out.parts.push("Neither is very close. You can tell the farm you're interested on this page, so Tyllage knows there's demand near you.");
         out.sources.push("Live collection points");
       } else out.parts.push("I couldn't place that postal code. Check the 6 digits?");
     }
@@ -408,11 +408,11 @@
         const rs = M.RECIPES.filter((r) => r.crop === crop.id).slice(0, 2);
         if (rs.length) { out.parts.push("Ideas: " + rs.map((r) => `${r.title} (${r.mins} min)`).join(", ") + "."); out.sources.push("Recipe library"); }
       }
-      if (avail) out.links.push({ label: "Buy " + crop.name + " on MEOD Fresh ↗", href: M.utm("tyllage", "assistant", "ask-meod", "crop-" + crop.id) });
+      if (avail) out.links.push({ label: "Buy " + crop.name + " on Tyllage ↗", href: M.utm("tyllage", "assistant", "ask-tyllage", "crop-" + crop.id) });
     }
     if (BUY.test(lower) || (crop && /\b(buy|order)\b/.test(lower))) {
       out.intent = { crop: crop ? crop.id : "", qty: (lower.match(/\d+\s?(kg|g|packs?|bunch)/) || [""])[0] };
-      out.parts.push("Orders are placed on MEOD Fresh, or through your group-buy leader. I've noted your interest for the farm.");
+      out.parts.push("Orders are placed on Tyllage, or through your group-buy leader. I've noted your interest for the farm.");
     }
     // Approved FAQ retrieval: best keyword overlap.
     const scored = KB.map((k) => ({ k, s: k.keys.filter((key) => lower.includes(key)).length })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s);
@@ -422,11 +422,11 @@
       out.sources.push("Live harvest availability");
     }
     if (!out.parts.length && /^(hi|hello|hey|good (morning|afternoon|evening))\b/.test(lower)) {
-      out.parts.push("Hello! I can tell you what's being harvested this week, find a group-buy pickup near you, suggest recipes, or answer questions about delivery and how MEOD grows.");
+      out.parts.push("Hello! I can tell you what's being harvested this week, find a group-buy pickup near you, suggest recipes, or answer questions about delivery and how Tyllage grows.");
     }
     if (!out.parts.length) {
-      out.parts.push("I only answer from MEOD's approved information, and I don't have an answer for that. Would you like me to pass your question to a staff member? Type \"staff\".");
-      if (/^staff$|human|person|talk to/.test(lower)) { out.parts = ["I've passed your question to a MEOD staff member."]; out.escalate = true; }
+      out.parts.push("I only answer from Tyllage's approved information, and I don't have an answer for that. Would you like me to pass your question to a staff member? Type \"staff\".");
+      if (/^staff$|human|person|talk to/.test(lower)) { out.parts = ["I've passed your question to a Tyllage staff member."]; out.escalate = true; }
     }
     return out;
   }
@@ -438,11 +438,11 @@
     const date = new Date(rec.date).toLocaleDateString("en-SG", { day: "numeric", month: "long" });
     const [f1, f2, f3] = rec.facts;
     const open = { warm: "A little news from the farm 🌱", informative: `Farm update, ${date}:`, kids: "Guess what happened at the farm this week? 🐞" }[tone];
-    const close = { warm: `Grown in Kranji, Singapore, by the MEOD team.`, informative: `${c.name} from MEOD, grown in Kranji, Singapore.`, kids: "Ask a grown-up to find MEOD's veggies with you!" }[tone];
+    const close = { warm: `Grown in Kranji, Singapore, by the Tyllage team.`, informative: `${c.name} from Tyllage, grown in Kranji, Singapore.`, kids: "Ask a grown-up to find Tyllage's veggies with you!" }[tone];
     return {
-      instagram: `${open}\n\n${f1}. ${f2}. ${f3}.\n\n${close}\nOrder on MEOD Fresh (link in bio).`,
-      blog: `${date} — ${f1}. ${f2}. ${f3}. ${c.name} from ${rec.greenhouse} goes out on MEOD's ${c.harvestDay} harvest. ${ATTR[c.id] ? "It's best for " + ATTR[c.id].styles.join(" and ") + "." : ""}`,
-      whatsapp: `Hi everyone! News from MEOD Farm in Kranji: ${f1}. ${f3}. Order ${c.name} through your usual pickup this week.`,
+      instagram: `${open}\n\n${f1}. ${f2}. ${f3}.\n\n${close}\nOrder on Tyllage (link in bio).`,
+      blog: `${date} — ${f1}. ${f2}. ${f3}. ${c.name} from ${rec.greenhouse} goes out on Tyllage's ${c.harvestDay} harvest. ${ATTR[c.id] ? "It's best for " + ATTR[c.id].styles.join(" and ") + "." : ""}`,
+      whatsapp: `Hi everyone! News from Tyllage in Kranji: ${f1}. ${f3}. Order ${c.name} through your usual pickup this week.`,
       facts: rec.facts.map((f) => ({ fact: f, source: `${rec.id} · ${rec.type} · ${rec.greenhouse} · ${rec.by}` }))
     };
   }
@@ -476,7 +476,7 @@
   // Demo Search Console export (synthetic) so the clustering has something to show.
   const DEMO_SEARCH = [
     ["nai bai recipe", 38, 2100, 7.2], ["how to cook nai bai", 12, 1400, 11.5], ["kai lan recipe easy", 3, 1900, 18.3],
-    ["vegetable group buy singapore", 9, 880, 9.8], ["vegetable group buy near me", 2, 640, 15.1], ["meod farm", 210, 900, 1.2],
+    ["vegetable group buy singapore", 9, 880, 9.8], ["vegetable group buy near me", 2, 640, 15.1], ["tyllage farm", 210, 900, 1.2],
     ["singapore farm tour for kids", 25, 1200, 5.4], ["kranji farm visit", 41, 1500, 3.9], ["pesticide free vegetables singapore", 6, 1100, 12.7],
     ["fresh vegetables delivery singapore", 4, 3200, 24.0], ["locally grown vegetables singapore", 11, 1700, 10.4], ["what to cook with tuscan kale", 1, 520, 19.8]
   ].map(([query, clicks, impressions, position]) => ({ query, clicks, impressions, position }));
@@ -502,21 +502,21 @@
     const c = M.CROPS.find((x) => q.includes(x.name.toLowerCase())) || M.featuredCrops()[0];
     const recipes = M.RECIPES.filter((r) => r.crop === c.id).slice(0, 3);
     const cl = clusterOf(q).id;
-    const title = cl === "group" ? "Vegetable Group Buys Near You | MEOD Farm, Singapore"
-      : cl === "visit" ? "Farm Tours for Kids and Schools in Kranji | MEOD Farm"
-      : `${c.name} (${c.zh}): How It's Grown, Stored and Cooked | MEOD`;
+    const title = cl === "group" ? "Vegetable Group Buys Near You | Tyllage, Singapore"
+      : cl === "visit" ? "Farm Tours for Kids and Schools in Kranji | Tyllage"
+      : `${c.name} (${c.zh}): How It's Grown, Stored and Cooked | Tyllage`;
     return {
-      title, meta: `Singapore-grown ${c.name} from MEOD Farm in Kranji: harvest days, how to keep it fresh, and ${recipes.length} easy recipes. Order on MEOD Fresh or collect from a group buy.`,
-      h1: cl === "group" ? "Collect fresh MEOD vegetables from a neighbour" : `Singapore-grown ${c.name}`,
+      title, meta: `Singapore-grown ${c.name} from Tyllage in Kranji: harvest days, how to keep it fresh, and ${recipes.length} easy recipes. Order on Tyllage or collect from a group buy.`,
+      h1: cl === "group" ? "Collect fresh Tyllage vegetables from a neighbour" : `Singapore-grown ${c.name}`,
       sections: [
-        { h: `How MEOD grows ${c.name}`, from: "Approved FAQ + farm log", body: "Grown in Kranji without pesticides, using helpful insects like ladybirds. Harvested the morning it leaves the farm. (MEOD to add its own words and a photo.)" },
+        { h: `How Tyllage grows ${c.name}`, from: "Approved FAQ + farm log", body: "Grown in Kranji without pesticides, using helpful insects like ladybirds. Harvested the morning it leaves the farm. (Tyllage to add its own words and a photo.)" },
         { h: "When it's harvested", from: "Harvest plan", body: `${c.name} is harvested on ${c.harvestDay}s. Delivery Tue / Thu / Sat, free from S$60.` },
         { h: "Keeping it fresh", from: "Approved FAQ", body: KB.find((k) => k.id === "storage").answer },
-        { h: "Easy recipes", from: "Recipe library", body: recipes.map((r) => `${r.title} (${r.mins} min)`).join(" · ") || "MEOD to add recipes." },
-        { h: "Where to buy", from: "Collection points", body: `Order on MEOD Fresh, or collect from one of ${M.POINTS.length} neighbourhood group-buy pickups.` }
+        { h: "Easy recipes", from: "Recipe library", body: recipes.map((r) => `${r.title} (${r.mins} min)`).join(" · ") || "Tyllage to add recipes." },
+        { h: "Where to buy", from: "Collection points", body: `Order on Tyllage, or collect from one of ${M.POINTS.length} neighbourhood group-buy pickups.` }
       ],
-      faq: [`Is MEOD's ${c.name} organic?`, `How long does ${c.name} keep in the fridge?`, "Can I collect instead of delivery?"],
-      links: ["This Week at MEOD", "Find your collection point", "MEOD Fresh: " + c.name]
+      faq: [`Is Tyllage's ${c.name} organic?`, `How long does ${c.name} keep in the fridge?`, "Can I collect instead of delivery?"],
+      links: ["This Week at Tyllage", "Find your collection point", "Tyllage: " + c.name]
     };
   }
 

@@ -1,5 +1,5 @@
-/* Tyllage Growth Intelligence for MEOD — consumer page + farm hub.
-   Palette sampled from meod.com.sg (same tokens as Tyllage-Vibecode): forest, gold, berry, stony. */
+/* Tyllage Growth Intelligence — consumer page + farm hub.
+   Palette matched to the Tyllage logo: forest, gold, berry, stony. */
 :root {
   --forest: #054f12;
   --forest-dark: #033a0d;
@@ -347,7 +347,7 @@ legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
 .funnel-label { font-weight: 600; font-size: .92rem; }
 .funnel strong { grid-row: span 2; align-self: center; font-size: 1.3rem; color: var(--forest); font-variant-numeric: tabular-nums; }
 
-/* ---------- Ask MEOD assistant (consumer page) ---------- */
+/* ---------- Ask Tyllage assistant (consumer page) ---------- */
 .chat-fab { position: fixed; right: 20px; bottom: 20px; z-index: 80; display: inline-flex; align-items: center; gap: 8px; background: var(--forest); color: var(--white); border: 0; border-radius: 999px; padding: 12px 18px; font: 600 .95rem var(--font-body); cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
 .chat-fab svg { width: 22px; height: 22px; }
 .chat-fab:hover { background: var(--forest-dark); }
@@ -487,3 +487,74 @@ button.chip { font: inherit; font-size: .92rem; }
 @media (max-width: 960px) {
   .q-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---------- Tyllage brand badge (full-colour logo on dark surfaces) ---------- */
+.brand-badge { display: inline-flex; align-items: center; background: var(--white); border-radius: 10px; padding: 4px 10px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.logo.brand-badge img { height: 34px; width: auto; }
+.hub-brand .brand-badge img { height: 28px; width: auto; }
+.site-footer .brand-badge img { height: 34px; width: auto; }
+@media (max-width: 520px) { .logo.brand-badge img { height: 28px; } }
+.block { display: block; }
+
+/* ---------- Your weekly veggie savings (consumer page) ---------- */
+.offer-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; background: var(--white); border: 1px dashed var(--gold-dark); border-radius: 14px; padding: 12px 16px; margin: 20px 0 0; }
+.offer-banner p { margin: 0; flex: 1 1 260px; font-weight: 500; }
+.offer-banner:empty { display: none; }
+.savings-layout { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 24px; margin-top: 20px; align-items: start; }
+.savings-form { padding: 22px 24px; }
+.savings-form fieldset { margin-bottom: 14px; }
+.savings-form legend { font-weight: 600; font-size: .95rem; }
+.savings-out { display: grid; gap: 16px; }
+.savings-out > .card { padding: 22px 24px; }
+.qty-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.qty-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 12px; }
+.qty-list li.on { border-color: var(--forest); background: var(--good-bg); }
+.qty-name { display: grid; line-height: 1.25; }
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--forest); background: var(--white); color: var(--forest); font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.stepper button:disabled { opacity: .35; cursor: default; }
+.stepper output { min-width: 20px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.checkout .big-total { display: block; font-size: clamp(2.2rem, 6vw, 3rem); color: var(--forest); line-height: 1.1; margin: 2px 0 12px; font-variant-numeric: tabular-nums; }
+.basket-sum dd.save { color: var(--good-ink); font-weight: 600; }
+.checkout .btn-forest { margin-top: 4px; }
+.fulfil-list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.fulfil-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.fulfil-list li.best { border-color: var(--forest); background: var(--good-bg); }
+.fulfil-list li.best > span > strong::after { content: " · best"; color: var(--good-ink); font-size: .82rem; }
+.fulfil-list li.off { opacity: .65; }
+.fulfil-list li > strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.card h3 .ai-pill { vertical-align: middle; }
+.compare, .after-order { padding: 22px 24px; margin-top: 20px; }
+.compare h3, .after-order h3, .savings-out h3 { color: var(--forest); font-size: 1.15rem; }
+.compare-sum { margin-top: 12px; font-size: .95rem; }
+.loyalty-track { display: flex; gap: 8px; margin: 6px 0 10px; }
+.loyalty-track span { flex: 0 0 40px; height: 10px; border-radius: 999px; background: var(--stony); }
+.loyalty-track span.on { background: var(--forest); }
+@media (max-width: 860px) { .savings-layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Smart Value hub pages ---------- */
+.chain { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: chain; }
+.chain li { position: relative; background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.chain li + li::before { content: "→"; position: absolute; left: -12px; top: 50%; transform: translate(-50%, -50%); color: var(--muted); font-weight: 700; }
+.chain .chain-step { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-dark); }
+.chain strong { display: block; font-size: 1.5rem; color: var(--forest); font-variant-numeric: tabular-nums; }
+.chain p { margin: 2px 0 0; font-size: .88rem; color: var(--muted); }
+.journey-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.journey-steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-bottom: 1px dashed var(--line); }
+.journey-steps li > span:first-child { width: 24px; height: 24px; border-radius: 50%; background: var(--forest); color: var(--white); font-size: .78rem; font-weight: 700; display: grid; place-items: center; }
+.journey-steps li > strong { font-variant-numeric: tabular-nums; }
+.waterfall { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.waterfall li { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) 80px; gap: 12px; align-items: center; font-size: .92rem; }
+.waterfall .wf-track { position: relative; height: 18px; background: #f3f0eb; border-radius: 4px; }
+.waterfall .wf-bar { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: var(--forest); }
+.waterfall .wf-bar.neg { background: #c98c6b; }
+.waterfall li.total { font-weight: 700; border-top: 1px solid var(--line); padding-top: 6px; }
+.waterfall li > span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.price-input { width: 84px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: .9rem; }
+@media (max-width: 860px) {
+  .chain { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chain li:nth-child(3)::before { content: none; }
+  .waterfall li { grid-template-columns: minmax(0, 1fr) 80px; }
+  .waterfall .wf-track { grid-column: 1 / -1; grid-row: 2; }
+}
+.stack-lg { display: grid; gap: 24px; min-width: 0; }

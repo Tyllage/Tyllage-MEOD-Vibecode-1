@@ -1,12 +1,13 @@
-/* Tyllage Growth Intelligence for MEOD — demo data, business rules and decision logic.
+/* Tyllage Growth Intelligence — demo data, business rules and decision logic.
    Everything here is synthetic. Shared by index.html (consumer page) and growth.html (farm hub). */
 (function () {
   "use strict";
 
-  const STORE_URL = "https://meodfresh.com/";
+  // Our own shop: store links land on the savings checker on the consumer page.
+  const STORE_URL = new URL("index.html#savings", location.href).toString();
   const STORAGE_KEY = "tyllage-growth-demo-v1";
 
-  // Illustrative thresholds. MEOD to confirm. Admin-editable copies live in state.rules.
+  // Illustrative thresholds. Tyllage to confirm. Admin-editable copies live in state.rules.
   const RULES = {
     minWeeks: 4,             // weeks of paid-order history before any planting call
     repeatShareMin: 0.4,     // share of demand from returning buyers that counts as dependable
@@ -106,7 +107,7 @@
       spend: 12000, visits: 1200, firstBuyers: 45, repeatBuyers: 18, orders: 74, revenue: 207200, discount: 0 },
     { id: "C-102", name: "10% off Nai Bai this week", channel: "Instagram", theme: "Discount", crop: "nai-bai", weeks: "2 weeks",
       spend: 12000, visits: 1500, firstBuyers: 52, repeatBuyers: 9, orders: 66, revenue: 171600, discount: 17160 },
-    { id: "C-103", name: "Morning harvest at MEOD", channel: "TikTok", theme: "Farm story", crop: "kai-lan", weeks: "2 weeks",
+    { id: "C-103", name: "Morning harvest at Tyllage", channel: "TikTok", theme: "Farm story", crop: "kai-lan", weeks: "2 weeks",
       spend: 8000, visits: 2600, firstBuyers: 21, repeatBuyers: 4, orders: 27, revenue: 75600, discount: 0 },
     { id: "C-104", name: "Punggol Harvest Club", channel: "WhatsApp (leader)", theme: "Group buy", crop: "nai-bai", weeks: "4 weeks",
       spend: 3000, visits: 340, firstBuyers: 38, repeatBuyers: 24, orders: 112, revenue: 268800, discount: 0 },
@@ -118,13 +119,13 @@
 
   // Search topics. Volumes are NOT verified — validate in Google Search Console or a keyword tool first.
   const SEO_TOPICS = [
-    { query: "locally grown vegetables singapore", intent: "Buy", page: "This Week at MEOD", status: "weak", idea: "Say 'grown in Kranji, Singapore' in the page title and first paragraph; list this week's crops in plain text, not only images." },
-    { query: "fresh vegetables delivery singapore", intent: "Buy", page: "MEOD Fresh home", status: "exists", idea: "Make delivery days (Tue / Thu / Sat) and the S$60 free-delivery threshold visible without scrolling." },
+    { query: "locally grown vegetables singapore", intent: "Buy", page: "This Week at Tyllage", status: "weak", idea: "Say 'grown in Kranji, Singapore' in the page title and first paragraph; list this week's crops in plain text, not only images." },
+    { query: "fresh vegetables delivery singapore", intent: "Buy", page: "Tyllage home", status: "exists", idea: "Make delivery days (Tue / Thu / Sat) and the S$60 free-delivery threshold visible without scrolling." },
     { query: "nai bai recipe", intent: "Learn → buy", page: "Nai Bai recipes", status: "exists", idea: "Already bringing first-time buyers (C-105). Add a 'Get the Nai Bai' link to each recipe and a FAQ on storage." },
-    { query: "kai lan recipe easy", intent: "Learn → buy", page: "—", status: "gap", idea: "No page yet. A short recipe page linked to Kai Lan on MEOD Fresh could help, since Kai Lan buyers rarely return." },
+    { query: "kai lan recipe easy", intent: "Learn → buy", page: "—", status: "gap", idea: "No page yet. A short recipe page linked to Kai Lan on Tyllage could help, since Kai Lan buyers rarely return." },
     { query: "vegetable group buy near me", intent: "Join", page: "Find your collection point", status: "gap", idea: "Publish one page per collection area (e.g. 'Punggol vegetable group buy') with pickup day, window and how to join." },
-    { query: "singapore farm tour for kids", intent: "Visit", page: "MEOD Experiences", status: "exists", idea: "Link from the tour page to the after-visit offer so visits turn into purchases." },
-    { query: "pesticide free vegetables singapore", intent: "Buy", page: "Meet your farmers", status: "weak", idea: "Explain how MEOD grows without pesticides in MEOD's own words; avoid claims MEOD hasn't approved." },
+    { query: "singapore farm tour for kids", intent: "Visit", page: "Tyllage Experiences", status: "exists", idea: "Link from the tour page to the after-visit offer so visits turn into purchases." },
+    { query: "pesticide free vegetables singapore", intent: "Buy", page: "Meet your farmers", status: "weak", idea: "Explain how we grow without pesticides in our own words; avoid claims we haven't verified." },
     { query: "what to cook with tuscan kale", intent: "Learn → buy", page: "—", status: "gap", idea: "Interest in kale is high but purchases are low. Recipe content may help people who don't know how to cook it." }
   ];
 
@@ -136,7 +137,7 @@
     { id: "inactive", label: "Inactive", rule: "No order for 60+ days", count: 158 }
   ];
 
-  // Public-facing approved incentive (illustrative; MEOD to confirm).
+  // Public-facing approved incentive (illustrative; Tyllage to confirm).
   const OFFERS = { freeDeliveryFrom: 6000, deliveryDays: "Tue, Thu and Sat", orderCutoff: "10pm the night before" };
 
   /* ---------- helpers ---------- */
@@ -403,30 +404,30 @@
       },
       bundle: {
         hook: `"Never cooked ${c.name}? Start here."`,
-        body: `New to ${c.name}? Our starter bundle pairs it with another green from this week's harvest${/bundle/i.test(rec.offer) ? " (bundle price approved by MEOD)" : ""}.`,
+        body: `New to ${c.name}? Our starter bundle pairs it with another green from this week's harvest${/bundle/i.test(rec.offer) ? " (bundle price approved by Tyllage)" : ""}.`,
         shots: [`unboxing the starter bundle`, `${c.name} vs the other green side by side`, `one quick dish: ${dish}`],
         cta: "Try the starter bundle"
       }
     }[angle || "recipe"];
     return [
-      { channel: "Instagram", text: `Harvesting ${c.name} (${c.zh}) on ${c.harvestDay} 🌱 Grown at MEOD in Kranji, Singapore.\n\n${A.body}\n\n${A.cta}: order on MEOD Fresh (link in bio). Delivery ${OFFERS.deliveryDays}.` },
-      { channel: "Facebook", text: `${A.body}\n\nGrown at MEOD Farm in Kranji, Singapore, and harvested on ${c.harvestDay}. Order on MEOD Fresh for delivery ${OFFERS.deliveryDays}, or collect from a neighbourhood group buy.\n\n${A.cta} → ${link}` },
+      { channel: "Instagram", text: `Harvesting ${c.name} (${c.zh}) on ${c.harvestDay} 🌱 Grown at Tyllage in Kranji, Singapore.\n\n${A.body}\n\n${A.cta}: order on Tyllage (link in bio). Delivery ${OFFERS.deliveryDays}.` },
+      { channel: "Facebook", text: `${A.body}\n\nGrown at Tyllage in Kranji, Singapore, and harvested on ${c.harvestDay}. Order on Tyllage for delivery ${OFFERS.deliveryDays}, or collect from a neighbourhood group buy.\n\n${A.cta} → ${link}` },
       { channel: "TikTok / Reels", text: `Hook (0–2s): ${A.hook}\n${A.shots.map((s, i) => `Shot ${i + 1}: ${s}.`).join("\n")}\nOn-screen text: Singapore-grown ${c.name}.\nCaption: ${A.cta}. Link in bio.` },
-      { channel: "WhatsApp (leader)", text: `Hi neighbours! MEOD is harvesting fresh ${c.name} this ${c.harvestDay}${pickup}. ${A.body} Order here: ${link}\nReply STOP to opt out.` }
+      { channel: "WhatsApp (leader)", text: `Hi neighbours! Tyllage is harvesting fresh ${c.name} this ${c.harvestDay}${pickup}. ${A.body} Order here: ${link}\nReply STOP to opt out.` }
     ];
   }
 
   function captionChecks(text, link) {
     return [
       { ok: text.length <= 2200, label: "Within Instagram's 2,200-character limit" },
-      { ok: /singapore|kranji|meod/i.test(text), label: "Says it's grown by MEOD in Singapore" },
-      { ok: !/\b\d+%\s*off|\$\s?\d/i.test(text) || /bundle/i.test(text), label: "No price or discount claim (needs MEOD approval)" },
+      { ok: /singapore|kranji|tyllage/i.test(text), label: "Says it's grown by Tyllage in Singapore" },
+      { ok: !/\b\d+%\s*off|\$\s?\d/i.test(text) || /bundle/i.test(text), label: "No price or discount claim (needs Tyllage approval)" },
       { ok: !/organic|cure|guarantee/i.test(text), label: "No 'organic', health or guarantee claims" },
       { ok: !link || text.includes(link) || /link in bio/i.test(text), label: "Has a trackable link (or 'link in bio')" }
     ];
   }
 
-  window.MEOD = {
+  window.TY = {
     STORE_URL, RULES, CROPS, RECIPES, POINTS, CAMPAIGNS, SEO_TOPICS, SEGMENTS, OFFERS,
     money, pct, sum, avg, crop, committedKg, uncommittedKg, margin, weekLabels, utm,
     locatePostal, nearestPoints, featuredCrops, plantingVerdict, pointStatus, campaignStats,

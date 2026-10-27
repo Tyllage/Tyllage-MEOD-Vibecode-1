@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>This Week at MEOD — Fresh Singapore-Grown Vegetables | Prototype</title>
-  <meta name="description" content="Prototype: see what MEOD Farm is harvesting this week in Kranji, Singapore, find recipes, find a neighbourhood group-buy pickup and tell the farm what you'd buy.">
+  <title>Tyllage — Fresh Singapore-Grown Vegetables, Better Value | Prototype</title>
+  <meta name="description" content="Prototype: see what Tyllage is harvesting this week in Kranji, Singapore, find recipes, find a neighbourhood group-buy pickup and tell the farm what you'd buy.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,12 +14,13 @@
 </head>
 <body class="site">
   <a class="skip-link" href="#main">Skip to content</a>
-  <div class="proto-bar" role="note">Prototype by Tyllage for MEOD Farm · all data is made up · not MEOD's live site</div>
+  <div class="proto-bar" role="note">Tyllage prototype · all prices, stock and numbers are made up for the demo</div>
 
   <header class="site-header">
     <nav class="container nav" aria-label="Main">
-      <a class="logo" href="index.html"><img src="assets/meod-light.svg" alt="MEOD Farm home" width="106" height="30"></a>
+      <a class="logo brand-badge" href="index.html"><img src="assets/tyllage-logo.png" alt="Tyllage home" width="76" height="34"></a>
       <ul class="nav-links" id="nav-links">
+        <li><a href="#savings">Savings</a></li>
         <li><a href="#harvest">This week</a></li>
         <li><a href="#deals">Deals</a></li>
         <li><a href="#cook">Cook</a></li>
@@ -29,8 +30,8 @@
         <li><a href="#farmers">Farmers</a></li>
       </ul>
       <div class="nav-actions">
-        <a class="btn btn-sm btn-outline-light" href="growth.html">Farm view</a>
-        <a class="btn btn-sm btn-gold" data-store="nav" href="https://meodfresh.com/" target="_blank" rel="noopener">MEOD Fresh ↗</a>
+        <a class="btn btn-sm btn-outline-light" href="growth.html">Team view</a>
+        <a class="btn btn-sm btn-gold" href="#savings">Check my savings</a>
         <button class="menu-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
         </button>
@@ -42,12 +43,12 @@
     <section class="hero">
       <img class="hero-bg" src="assets/img/hero-farm.webp" srcset="assets/img/hero-farm-640.webp 640w, assets/img/hero-farm.webp 1200w" sizes="100vw" alt="" fetchpriority="high">
       <div class="container">
-        <span class="eyebrow badge">This week at MEOD · <span id="hero-week"></span></span>
-        <h1 class="script">Fresh from the farm.</h1>
-        <p class="hero-lead">Made for your table. See what we're harvesting in Kranji this week, find easy ways to cook it, and collect it from a neighbour near you.</p>
+        <span class="eyebrow badge">This week at Tyllage · <span id="hero-week"></span></span>
+        <h1 class="script">Fresher. Local. Better value.</h1>
+        <p class="hero-lead">See how much you could save on Singapore-grown vegetables, and find the most affordable way to get them. Harvested in Kranji, collected from a neighbour near you.</p>
         <div class="hero-ctas">
-          <a class="btn btn-gold" href="#harvest">See this week's harvest</a>
-          <a class="btn btn-ghost" href="#collect">Find a pickup near you</a>
+          <a class="btn btn-gold" href="#savings">Check my weekly savings</a>
+          <a class="btn btn-ghost" href="#harvest">See this week's harvest</a>
         </div>
       </div>
     </section>
@@ -56,9 +57,56 @@
       <div class="container info-row">
         <span><strong>Delivery</strong> Tue · Thu · Sat</span>
         <span><strong>Free delivery</strong> from S$60</span>
-        <span><strong>Or collect</strong> from a neighbourhood group buy</span>
+        <span><strong>Or collect</strong> from a neighbourhood group buy, no delivery fee</span>
       </div>
     </div>
+
+    <section id="savings" class="tint">
+      <div class="container">
+        <span class="eyebrow dark">Your weekly veggie savings</span>
+        <h2 class="script section-title">What will this really cost me?</h2>
+        <p class="lead">Build your basket and see the full checkout total, including delivery or pickup, then compare it with like-for-like local vegetables at the supermarket.</p>
+        <div class="offer-banner" id="offer-banner" aria-live="polite"></div>
+        <div class="savings-layout">
+          <form class="card savings-form" id="savings-form" novalidate>
+            <fieldset>
+              <legend>Start from</legend>
+              <div class="chips" id="quick-fill"></div>
+            </fieldset>
+            <fieldset>
+              <legend>Your basket <span class="muted">(250 g packs)</span></legend>
+              <ul class="qty-list" id="qty-list"></ul>
+            </fieldset>
+            <fieldset>
+              <legend>How will you get it?</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="mode" value="pickup" checked> Group-buy pickup (S$0)</label>
+                <label class="chip"><input type="radio" name="mode" value="home"> Home delivery</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Voucher <span class="muted">(hypothetical, to test the idea)</span></legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="voucher" value="0" checked> None</label>
+                <label class="chip"><input type="radio" name="voucher" value="200"> S$2 off</label>
+                <label class="chip"><input type="radio" name="voucher" value="500"> S$5 off</label>
+              </div>
+            </fieldset>
+            <label class="field">
+              <span>Postal code <span class="muted">(optional, finds your nearest pickup)</span></span>
+              <input name="postal" inputmode="numeric" maxlength="6" placeholder="e.g. 820123" autocomplete="postal-code">
+            </label>
+          </form>
+          <div class="savings-out">
+            <div class="card checkout" id="checkout" aria-live="polite"></div>
+            <div class="card" id="fulfil" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="card compare" id="compare"></div>
+        <div class="card after-order" id="after-order" hidden aria-live="polite"></div>
+        <p class="form-note">Concept prototype. Our prices, pickup costs and voucher terms are demo values; supermarket prices are placeholders until checked in store. A fair comparison uses current prices for the same vegetable, origin and similar pack size.</p>
+      </div>
+    </section>
 
     <section id="harvest">
       <div class="container">
@@ -73,41 +121,17 @@
       <div class="container">
         <span class="eyebrow dark">Fresh deals near you</span>
         <h2 class="script section-title">Better value when neighbours buy together</h2>
-        <p class="lead">Collect from a neighbourhood group buy and skip the home-delivery fee, or build a basket that reaches free delivery.</p>
-        <div class="deals-layout">
-          <form class="card basket-form" id="basket-form">
-            <fieldset>
-              <legend>How will you get it?</legend>
-              <div class="chips">
-                <label class="chip"><input type="radio" name="mode" value="pickup" checked> Group-buy pickup</label>
-                <label class="chip"><input type="radio" name="mode" value="home"> Home delivery</label>
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend>Household</legend>
-              <div class="chips">
-                <label class="chip"><input type="radio" name="hh" value="2" checked> 1–2</label>
-                <label class="chip"><input type="radio" name="hh" value="4"> 3–4</label>
-                <label class="chip"><input type="radio" name="hh" value="6"> 5+</label>
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend>Must-haves <span class="muted">(optional)</span></legend>
-              <div class="chips" id="basket-likes"></div>
-            </fieldset>
-          </form>
-          <div class="card basket" id="basket" aria-live="polite"></div>
-        </div>
-        <h3 class="sub-title">Farm-approved bundles</h3>
+        <p class="lead">Approved bundles cost less than buying separately. Add one to your basket and the saving shows up in your checkout total.</p>
+        <h3 class="sub-title">This week's bundles</h3>
         <div class="bundle-grid" id="bundle-grid"></div>
         <div class="offer-row">
-          <div class="offer"><strong>First order?</strong> A one-time welcome discount may apply. <span class="muted">(Illustrative; MEOD to confirm.)</span></div>
+          <div class="offer"><strong>First order?</strong> A one-time welcome discount may apply. <span class="muted">(Illustrative; terms to be confirmed.)</span></div>
           <div class="offer"><strong>Refer a neighbour.</strong> You both get a reward after their first order. <span class="muted">(Illustrative.)</span></div>
         </div>
         <form class="card survey" id="survey">
-          <h3>Help MEOD get the deal right</h3>
+          <h3>Help Tyllage get the deal right</h3>
           <p class="muted">Three quick questions. Your answers stay anonymous.</p>
-          <fieldset><legend>Would you buy from MEOD if veg was cheaper but you had to collect it?</legend>
+          <fieldset><legend>Would you buy from Tyllage if veg was cheaper but you had to collect it?</legend>
             <div class="chips"><label class="chip"><input type="radio" name="q1" value="yes"> Yes</label><label class="chip"><input type="radio" name="q1" value="maybe"> Maybe</label><label class="chip"><input type="radio" name="q1" value="no"> No</label></div></fieldset>
           <fieldset><legend>Would you pay a bit more for home delivery?</legend>
             <div class="chips"><label class="chip"><input type="radio" name="q2" value="yes"> Yes</label><label class="chip"><input type="radio" name="q2" value="maybe"> Maybe</label><label class="chip"><input type="radio" name="q2" value="no"> No</label></div></fieldset>
@@ -116,7 +140,7 @@
           <p class="form-error" id="survey-error" role="alert"></p>
           <button class="btn btn-forest" type="submit">Send answers</button>
         </form>
-        <p class="form-note">Delivery: S$10 below S$60, free from S$60, per MEOD Fresh's shipping policy. Group-buy savings depend on each leader's arrangements and MEOD's approved pricing.</p>
+        <p class="form-note">Delivery: S$10 below S$60, free from S$60, per Tyllage's shipping policy. Group-buy savings depend on each leader's arrangements and Tyllage's approved pricing.</p>
       </div>
     </section>
 
@@ -185,7 +209,7 @@
       <div class="container">
         <span class="eyebrow dark">Coming next?</span>
         <h2 class="script section-title">You decide what we grow</h2>
-        <p class="lead">These crops could join MEOD's harvest. Say you're interested, or reserve a share of the first harvest. You only pay when you collect.</p>
+        <p class="lead">These crops could join Tyllage's harvest. Say you're interested, or reserve a share of the first harvest. You only pay when you collect.</p>
         <div class="newcrop-grid" id="newcrop-grid"></div>
         <p class="form-note">A reservation counts as a firmer commitment than interest. In this prototype nothing is charged.</p>
       </div>
@@ -196,8 +220,8 @@
         <div>
           <span class="eyebrow dark">Help shape our next harvest</span>
           <h2 class="script section-title">What would you buy regularly?</h2>
-          <p class="lead">Tell the farm what you'd actually buy. When enough people order regularly, MEOD can plan to grow more of it.</p>
-          <p class="form-note">This is not an order and you won't be charged. It helps MEOD decide what to grow.</p>
+          <p class="lead">Tell the farm what you'd actually buy. When enough people order regularly, Tyllage can plan to grow more of it.</p>
+          <p class="form-note">This is not an order and you won't be charged. It helps Tyllage decide what to grow.</p>
           <div class="interest-summary card" id="interest-summary"></div>
         </div>
         <form class="card interest-form" id="interest-form" novalidate>
@@ -226,7 +250,7 @@
           </label>
           <label class="check">
             <input type="checkbox" name="consent" required>
-            <span>MEOD may count my answers when planning what to grow. (No contact details are collected.)</span>
+            <span>Tyllage may count my answers when planning what to grow. (No contact details are collected.)</span>
           </label>
           <p class="form-error" id="interest-error" role="alert"></p>
           <button class="btn btn-forest" type="submit">Tell the farm</button>
@@ -240,7 +264,7 @@
         <h2 class="script section-title">Grown in Kranji, not flown in</h2>
         <div class="story-grid">
           <article class="story card">
-            <img src="assets/img/farmer-vertical-500.webp" alt="A MEOD farmer tending greens" width="500" height="625" loading="lazy">
+            <img src="assets/img/farmer-vertical-500.webp" alt="A Tyllage farmer tending greens" width="500" height="625" loading="lazy">
             <div class="story-body">
               <h3>Picked the morning it leaves</h3>
               <p>We harvest on the day of delivery, so your greens spend hours, not days, getting to you.</p>
@@ -254,7 +278,7 @@
             </div>
           </article>
           <article class="story card">
-            <img src="assets/img/farm-flatlay-640.webp" alt="MEOD vegetables laid out on a table" width="640" height="427" loading="lazy">
+            <img src="assets/img/farm-flatlay-640.webp" alt="Tyllage vegetables laid out on a table" width="640" height="427" loading="lazy">
             <div class="story-body">
               <h3>Visit, then cook</h3>
               <p>Come for a farm tour, take home what you picked, and order more for the weeks after.</p>
@@ -267,19 +291,19 @@
 
   <footer class="site-footer">
     <div class="container footer-row">
-      <img src="assets/meod-light.svg" alt="MEOD Farm" width="106" height="30" loading="lazy">
-      <p>MEOD Fresh · powered by Tyllage. A prototype for MEOD Farm. Products, stock, pickups and numbers on this page are made up for the demo. Orders happen only on <a href="https://meodfresh.com/" target="_blank" rel="noopener">meodfresh.com</a>.</p>
-      <p class="muted-light">© 2026 Tyllage LLP. MEOD name, logo and photos © MEOD Farm.</p>
+      <span class="brand-badge"><img src="assets/tyllage-logo.png" alt="Tyllage" width="76" height="34" loading="lazy"></span>
+      <p>Tyllage · Singapore-grown vegetables, better value when your neighbourhood buys together. This is a prototype: products, prices, stock, pickups and numbers are made up for the demo and no real orders are taken.</p>
+      <p class="muted-light">© 2026 Tyllage LLP. Demo photography is placeholder imagery.</p>
     </div>
   </footer>
 
   <button class="chat-fab" type="button" id="chat-open" aria-controls="chat" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
-    <span>Ask MEOD</span>
+    <span>Ask Tyllage</span>
   </button>
-  <div class="chat" id="chat" role="dialog" aria-label="Ask MEOD" hidden>
+  <div class="chat" id="chat" role="dialog" aria-label="Ask Tyllage" hidden>
     <div class="chat-head">
-      <div><strong>Ask MEOD</strong><span>Answers from MEOD's approved info · prototype</span></div>
+      <div><strong>Ask Tyllage</strong><span>Answers from Tyllage's approved info · prototype</span></div>
       <button type="button" class="chat-close" id="chat-close" aria-label="Close chat">×</button>
     </div>
     <div class="chat-log" id="chat-log" aria-live="polite"></div>
@@ -295,6 +319,7 @@
   <script src="js/data.js"></script>
   <script src="js/intel.js"></script>
   <script src="js/insights.js"></script>
+  <script src="js/value.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/site.js"></script>
 </body>
