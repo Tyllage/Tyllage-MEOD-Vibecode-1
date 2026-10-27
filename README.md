@@ -17,6 +17,18 @@ The direction is **Smart Value → Repeat customers → Verified demand → Farm
    - **3 · Demand → Growth:** Verified demand, Demand → Planting, New crops.
    - **Marketing:** Promotions & budget, Campaign Studio, Experiments, SEO, Trends & partners, Farm stories. Plus **Overview**, **Strategy** and **Settings**.
 
+## Start here: the Nai Bai scenario
+
+The team view opens on **Growth loop → Nai Bai scenario**, one journey that has to work end to end:
+
+1. **Goal:** more customers for Nai Bai (37 kg/week uncommitted, 42% margin, 55% of demand already from returning buyers).
+2. **Segment & offer:** lapsed and occasional Nai Bai buyers (opted in) plus neighbours at pickups with room; offers for a Nai Bai + Xiao Bai Cai bundle ranked against the price floor; the **whole basket compared** with Supermarket A/B (in store and online) and the wet market, with delivery or collection fees, vouchers and promotions, and when each price was checked; and whether we can **sustainably match** the cheapest complete like-for-like basket. Launch it.
+3. **Customers buy:** the campaign link opens the shop with the bundle and offer ready (S$1 off at a collection point, first order only). Place a demo order, then *Order the same next week*.
+4. **Measure:** visits, new and repeat orders, repeat rate, cost per new customer, revenue, offer and ad cost, contribution, and kg of Nai Bai, including your own demo orders.
+5. **Decide:** seven checks (paid weeks, repeat share, demand over supply, margin, recurring growth, campaign repeat rate, campaign profit) and a verdict; log *Approve a trial* or *Not yet*. Planting is never changed by the prototype.
+
+Each step says what works in the prototype and what is simulated. *Restart scenario* clears it in this browser.
+
 ## Demand Growth Loop (flagship workflow)
 
 **Discover → Convert → Retain → Validate → Plan farm growth.** Farm-commerce platforms overseas (e.g. Barn2Door, Local Line, Harvie, GrazeCart) already automate reminders, subscriptions, segmentation and promotions. Tyllage's aim is to connect that demand to production decisions for Singapore farms, including neighbourhood group buys. We don't claim to be the first to combine marketing and farming.
@@ -237,6 +249,7 @@ js/value.js       Smart Value & Demand Engine: price book + like-for-like compar
                   A/B/C offer test, reward check, verified demand, demo orders
 js/loop.js        Demand Growth Loop: priority comparison, group-buy momentum, personalised
                   rewards, harvest-aware calendar, experiment designer, evidence to grow, next move
+js/scenario.js    the Nai Bai scenario: goal, segment + offer, campaign link, results, decision
 js/account.js     text size + mock session (name and role only)
 js/login.js       mock log-in and sign-up
 js/ui.js          h() / s() DOM helpers (textContent only), toast, copy, AI pill

@@ -37,6 +37,15 @@
     { crop: "mesclun", retailer: "smB", pack: 125, cents: 420, origin: "imported", grade: "Australia, boxed", promo: "" }
   ];
 
+  // How shoppers get their veg elsewhere. Online fees are placeholders until checked on each store's site.
+  const RETAIL_WAYS = [
+    { retailer: "smA", way: "In store", fee: 0, freeFrom: 0, note: "You travel and carry it home" },
+    { retailer: "smA", way: "Online delivery", fee: 499, freeFrom: 7900, note: "Placeholder fee: check before use" },
+    { retailer: "smB", way: "In store", fee: 0, freeFrom: 0, note: "You travel and carry it home" },
+    { retailer: "smB", way: "Online delivery", fee: 600, freeFrom: 8000, note: "Placeholder fee: check before use" },
+    { retailer: "wet", way: "In person", fee: 0, freeFrom: 0, note: "Early mornings; loose, weigh-your-own" }
+  ];
+
   const PACK_G = 250;          // we sell greens in 250 g packs
   const PICKUP_MIN = 800;      // smallest basket a group-buy leader will pack (illustrative)
   const VOUCHER_MIN = 1000;    // hypothetical vouchers need a S$10 basket
@@ -121,6 +130,35 @@
     return out;
   }
 
+  // The whole basket, every way to buy it: same grams, like-for-like (local) only, with fees,
+  // our voucher and bundle saving, any listed promotion, and when each price was checked.
+  function fullCompare({ qty, voucher, promo }) {
+    const lines = basketLines(qty);
+    if (!lines.length) return { rows: [], lines };
+    const ours = ["pickup", "home"].map((mode) => {
+      const co = checkout({ qty, mode, voucher, promo });
+      return { who: "Tyllage", way: mode === "pickup" ? "Group-buy pickup" : "Home delivery", veg: co.subtotal, savings: co.bundleOff + co.voucherOff + co.promoOff,
+        savingsNote: [co.bundleOff ? "bundle" : "", co.voucherOff ? "voucher (hypothetical)" : "", co.promoOff ? "campaign offer" : ""].filter(Boolean).join(" + ") || "None",
+        fee: co.fee, total: co.total, complete: true, checked: "Today", ours: true, note: mode === "pickup" ? "Collect from your leader" : M.OFFERS.deliveryDays };
+    });
+    const theirs = RETAIL_WAYS.map((w) => {
+      let veg = 0, missing = 0, unverified = 0;
+      const dates = [], promos = [];
+      lines.forEach((l) => {
+        const hit = listings(l.c.id).filter((x) => x.retailer === w.retailer && x.origin === "local").sort((a, b) => a.per100 - b.per100)[0];
+        if (!hit) { missing++; return; }
+        veg += Math.round((hit.per100 * l.grams) / 100);
+        if (hit.verified) dates.push(hit.checked); else unverified++;
+        if (hit.promo) promos.push(hit.promo);
+      });
+      const fee = w.fee && veg < w.freeFrom ? w.fee : 0;
+      return { who: RETAILERS.find((r) => r.id === w.retailer).name, way: w.way, veg, savings: 0, savingsNote: promos.join(", ") || "None listed", fee,
+        total: veg + fee, complete: missing === 0, missing, checked: unverified ? "Not checked" : dates.sort()[0] || "Not checked", note: w.note };
+    });
+    const rows = ours.concat(theirs).sort((a, b) => (b.complete - a.complete) || (a.total - b.total));
+    return { rows, lines, cheapest: rows.find((r) => r.complete) };
+  }
+
   /* ---------- the real checkout total ---------- */
 
   function basketLines(qty) {
@@ -137,7 +175,8 @@
       .map((b) => ({ name: b.name, cents: b.full - b.price }));
   }
 
-  function checkout({ qty, mode, voucher }) {
+  // promo: a campaign offer { cents, label, pickupOnly } on top of any voucher.
+  function checkout({ qty, mode, voucher, promo }) {
     const lines = basketLines(qty);
     const subtotal = M.sum(lines.map((l) => l.cents));
     const bundles = bundleSaving(qty);
@@ -147,17 +186,18 @@
     const voucherOk = voucher > 0 && goods >= VOUCHER_MIN;
     const voucherOff = voucherOk ? Math.min(voucher, goods) : 0;
     const pickupOk = mode !== "pickup" || goods >= PICKUP_MIN;
-    const total = Math.max(0, goods + fee - voucherOff);
-    const e = M.orderEconomics(goods - voucherOff, M.sum(lines.map((l) => l.cost)), mode === "home" ? "home" : "pickup");
-    return { lines, subtotal, bundles, bundleOff, goods, fee, voucher, voucherOk, voucherOff, pickupOk, total, e,
+    const promoOff = promo && promo.cents && (!promo.pickupOnly || mode === "pickup") ? Math.min(promo.cents, goods - voucherOff) : 0;
+    const total = Math.max(0, goods + fee - voucherOff - promoOff);
+    const e = M.orderEconomics(goods - voucherOff - promoOff, M.sum(lines.map((l) => l.cost)), mode === "home" ? "home" : "pickup");
+    return { lines, subtotal, bundles, bundleOff, goods, fee, voucher, voucherOk, voucherOff, promo, promoOff, pickupOk, total, e,
       gap: mode === "home" && goods < D.freeFrom ? D.freeFrom - goods : 0 };
   }
 
   /* ---------- C. smart fulfilment ---------- */
 
-  function fulfilment({ qty, postal, voucher }) {
-    const pick = checkout({ qty, mode: "pickup", voucher });
-    const home = checkout({ qty, mode: "home", voucher });
+  function fulfilment({ qty, postal, voucher, promo }) {
+    const pick = checkout({ qty, mode: "pickup", voucher, promo });
+    const home = checkout({ qty, mode: "home", voucher, promo });
     const near = postal ? M.nearestPoints(postal, 3) : null;
     const R = M.rules();
     const point = near ? near.find((p) => p.km <= R.nearPointKm && M.pointStatus(p).util <= 0.95) : null;
@@ -312,10 +352,10 @@
     return { newO, rep, total, repShare, crops };
   }
 
-  function placeOrder({ qty, mode, voucher, repeat }) {
-    const co = checkout({ qty, mode, voucher });
+  function placeOrder({ qty, mode, voucher, repeat, campaign, promo }) {
+    const co = checkout({ qty, mode, voucher, promo });
     if (!co.goods) return null;
-    const order = { id: "DEMO-" + String(st().orders.length + 1).padStart(3, "0"), qty: { ...qty }, mode, voucher: co.voucherOff, goods: co.goods, total: co.total, repeat: Boolean(repeat), arm: arm().id, at: new Date().toISOString() };
+    const order = { id: "DEMO-" + String(st().orders.length + 1).padStart(3, "0"), qty: { ...qty }, mode, voucher: co.voucherOff + co.promoOff, goods: co.goods, total: co.total, repeat: Boolean(repeat), arm: arm().id, campaign: campaign || "", at: new Date().toISOString() };
     st().orders.push(order);
     M.save();
     M.track(repeat ? "order_repeat" : "order", order.id);
@@ -323,7 +363,7 @@
   }
 
   Object.assign(M, {
-    RETAILERS, PRICE_BOOK, PACK_G, PICKUP_MIN, VOUCHER_MIN, VOUCHERS, ARMS, SMART_WEEKS, REWARD_TEST,
+    RETAILERS, RETAIL_WAYS, PRICE_BOOK, fullCompare, PACK_G, PICKUP_MIN, VOUCHER_MIN, VOUCHERS, ARMS, SMART_WEEKS, REWARD_TEST,
     arm, ourPack, listings, compareCrop, basketCompare, basketLines, checkout, fulfilment, unitEconomics, priceFloor,
     st, offerOptions, figures, experiment, rewardCheck, loyalty, smartDemand, placeOrder
   });

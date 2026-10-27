@@ -294,6 +294,26 @@
   const offer = M.arm();
   let lastOrder = null;
 
+  // Arriving through a campaign link (e.g. the Nai Bai scenario): basket and offer ready.
+  const S = M.SCENARIO;
+  const fromLink = new URLSearchParams(location.search).get("c");
+  if (fromLink === S.CODE) {
+    try { sessionStorage.setItem("ty-campaign", S.CODE); } catch (e) { /* ignore */ }
+    Object.keys(qty).forEach((k) => delete qty[k]);
+    Object.assign(qty, S.BASKET);
+    if (!sessionStorage.getItem("ty-campaign-seen")) {
+      try { sessionStorage.setItem("ty-campaign-seen", "1"); } catch (e) { /* ignore */ }
+      M.track("campaign_visit", S.CODE);
+    }
+  }
+  const campaign = (() => { try { return sessionStorage.getItem("ty-campaign") === S.CODE ? S.CODE : ""; } catch (e) { return ""; } })();
+  // The offer applies to the first campaign order only; repeat orders are at the normal price.
+  const campaignPromo = () => {
+    if (!campaign || M.st().orders.some((o) => o.campaign === campaign)) return null;
+    const o = S.plan().chosen;
+    return o.discount ? { cents: o.discount, label: o.name, pickupOnly: true } : null;
+  };
+
   function addToBasket(id, packs, quiet) {
     qty[id] = Math.min(12, (qty[id] || 0) + (packs || 1));
     renderSavings();
@@ -327,8 +347,9 @@
     const fd = new FormData(savingsForm);
     const mode = fd.get("mode"), voucher = Number(fd.get("voucher"));
     const postal = String(fd.get("postal") || "").trim();
-    const co = M.checkout({ qty, mode, voucher });
-    const fu = M.fulfilment({ qty, postal: /^\d{6}$/.test(postal) ? postal : "", voucher });
+    const promo = campaignPromo();
+    const co = M.checkout({ qty, mode, voucher, promo });
+    const fu = M.fulfilment({ qty, postal: /^\d{6}$/.test(postal) ? postal : "", voucher, promo });
     const other = mode === "home" ? fu.pick : fu.home;
     const featured = M.featuredCrops();
     document.getElementById("qty-list").replaceChildren(...featured.concat(M.CROPS.filter((c) => qty[c.id] && !featured.includes(c))).map(qtyRow));
@@ -348,6 +369,7 @@
         co.bundleOff ? [h("dt", null, "Bundle saving"), h("dd", { class: "save" }, M.money(-co.bundleOff))] : null,
         h("dt", null, mode === "home" ? "Home delivery" : "Group-buy pickup"), h("dd", null, co.fee ? M.money(co.fee) : "S$0.00"),
         h("dt", null, "Voucher"), h("dd", { class: co.voucherOk ? "save" : null }, voucherLine),
+        promo ? [h("dt", null, "Campaign offer"), h("dd", { class: co.promoOff ? "save" : null }, co.promoOff ? M.money(-co.promoOff) : "Pickup only")] : null,
         h("dt", { class: "total" }, "You pay"), h("dd", { class: "total" }, M.money(co.total))) : h("p", { class: "muted" }, "Your basket is empty. Pick a starting point or add some greens."),
       co.goods && other.total !== co.total ? h("p", { class: "nudge" + (other.total > co.total ? " good" : "") },
         other.total > co.total ? `${mode === "home" ? "Pickup" : "Home delivery"} would cost ${M.money(other.total)}. You're saving ${M.money(other.total - co.total)}.`
@@ -355,8 +377,8 @@
       co.goods ? rewardNote(voucher) : null,
       !co.pickupOk ? h("p", { class: "form-error" }, `Group-buy leaders pack baskets from ${M.money(M.PICKUP_MIN)}. Add a little more or choose delivery.`) : null,
       h("button", { class: "btn btn-forest", type: "button", disabled: !co.goods || !co.pickupOk, onclick: () => {
-        lastOrder = M.placeOrder({ qty, mode, voucher });
-        if (lastOrder) { renderAfterOrder(); document.getElementById("after-order").scrollIntoView({ block: "nearest" }); toast("Demo order placed. Nothing was charged."); }
+        lastOrder = M.placeOrder({ qty, mode, voucher, campaign, promo });
+        if (lastOrder) { renderSavings(); renderOffer(); renderAfterOrder(); document.getElementById("after-order").scrollIntoView({ block: "nearest" }); toast("Demo order placed. Nothing was charged."); }
       } }, "Place demo order"),
       h("p", { class: "form-note" }, voucher ? "The voucher is hypothetical and not an active offer. " : "", "Assumes no extra group-buy collection charge.")].filter(Boolean));
 
@@ -375,7 +397,7 @@
         renderSavings();
       } }, "Switch to " + (fu.best === "pickup" ? "pickup" : "home delivery")) : null].filter(Boolean));
 
-    renderCompare(co);
+    renderCompare(co, voucher, promo);
   }
 
   // A reward that fits this shopper: first-timers, occasional shoppers and loyal households differ.
@@ -390,7 +412,7 @@
       } }, "Use it") : null);
   }
 
-  function renderCompare(co) {
+  function renderCompare(co, voucher, promo) {
     const box = document.getElementById("compare");
     if (!co.lines.length) { box.replaceChildren(h("h3", null, "Price check"), h("p", { class: "muted" }, "Add vegetables to compare prices.")); return; }
     const cmp = co.lines.map((l) => M.compareCrop(l.c));
@@ -412,7 +434,26 @@
       h("p", { class: "compare-sum" }, h("strong", null, "Same grams of local veg: "),
         bc.map((b, i) => [i ? " · " : "", b.r.name + " " + (b.complete ? M.money(b.cents) : b.missing === co.lines.length ? "no local match" : M.money(b.cents) + " (no local match for " + b.missing + ")")]),
         " · ", h("strong", null, "Tyllage " + M.money(co.subtotal)), " before fulfilment."),
-      h("p", { class: "form-note" }, "Imported vegetables are often cheaper, so we only call a price 'cheaper' against Singapore-grown produce in a similar pack size. Supermarket and wet-market prices here are placeholders, not checked."));
+      ...fullCompareTable(voucher, promo),
+      h("p", { class: "form-note" }, "Imported vegetables are often cheaper, so we only call a price 'cheaper' against Singapore-grown produce in a similar pack size. Supermarket and wet-market prices and online fees here are placeholders, not checked."));
+  }
+
+  // The whole basket, every way to buy it: vegetables, delivery or collection, vouchers and promos, and when prices were checked.
+  function fullCompareTable(voucher, promo) {
+    const fc = M.fullCompare({ qty, voucher, promo });
+    return [
+      h("h3", { class: "compare-title" }, "Your whole basket, every way to buy it"),
+      h("div", { class: "table-wrap" }, h("table", { class: "data-table compact" },
+        h("thead", null, h("tr", null, ["Where", "Vegetables", "Delivery or collection", "Vouchers & promos", "Total", "Price checked"].map((t, i) => h("th", { scope: "col", class: i && i < 5 ? "num" : null }, t)))),
+        h("tbody", null, fc.rows.map((x) => h("tr", { class: x.ours ? "ours" : null },
+          h("td", { "data-label": "Where" }, h("strong", null, x.who), h("span", { class: "muted small block" }, x.way + " · " + x.note)),
+          h("td", { class: "num", "data-label": "Vegetables" }, x.complete ? M.money(x.veg) : x.missing + " not stocked locally"),
+          h("td", { class: "num", "data-label": "Delivery or collection" }, x.fee ? M.money(x.fee) : "S$0.00"),
+          h("td", { class: "num", "data-label": "Vouchers & promos" }, x.savings ? M.money(-x.savings) : x.savingsNote),
+          h("td", { class: "num", "data-label": "Total" }, x.complete ? h("strong", null, M.money(x.total)) : "—"),
+          h("td", { "data-label": "Price checked" }, x.checked)))))),
+      fc.cheapest ? h("p", { class: "compare-sum" }, h("strong", null, "Cheapest complete basket: "), fc.cheapest.who + " (" + fc.cheapest.way.toLowerCase() + "), " + M.money(fc.cheapest.total) + ".") : null
+    ].filter(Boolean);
   }
 
   // After a purchase: the retention offer and a one-tap repeat order.
@@ -434,7 +475,7 @@
       recipe ? h("p", { class: "muted" }, "Use it up: " + recipe.title + " (" + recipe.mins + " min).") : null,
       h("div", { class: "crop-actions" },
         h("button", { class: "btn btn-sm btn-forest", type: "button", onclick: () => {
-          lastOrder = M.placeOrder({ qty: lastOrder.qty, mode: lastOrder.mode, voucher: 0, repeat: true });
+          lastOrder = M.placeOrder({ qty: lastOrder.qty, mode: lastOrder.mode, voucher: 0, repeat: true, campaign: lastOrder.campaign });
           renderAfterOrder();
           toast("Next week's order placed (demo).");
         } }, "Order the same next week"),
@@ -446,6 +487,14 @@
 
   // Offer test: this browser always sees the same one of three offers.
   function renderOffer() {
+    if (campaign) {
+      const o = S.plan().chosen, promo = campaignPromo();
+      document.getElementById("offer-banner").replaceChildren(
+        h("span", { class: "pill good" }, "Nai Bai week"),
+        h("p", null, `Nai Bai + Xiao Bai Cai bundle, picked Thursday. ${promo ? o.name + " on your first order." : "Your bundle is ready to reorder."}`),
+        h("a", { class: "btn btn-sm btn-gold", href: "#savings" }, "See my total"));
+      return;
+    }
     if (!sessionStorage.getItem("tg-offer")) {
       try { sessionStorage.setItem("tg-offer", "1"); } catch (e) { /* ignore */ }
       M.track("offer_view", offer.id);

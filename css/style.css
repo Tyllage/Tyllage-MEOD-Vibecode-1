@@ -835,3 +835,20 @@ body { background: var(--white); }
 .login-art .login-logo-white img { height: 44px; width: auto; }
 .login-art { justify-content: space-between; }
 .site section.hero > .container > .eyebrow { display: inline-block; text-align: left; }
+
+/* ---------- Nai Bai scenario (team view) ---------- */
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.stepper li { display: flex; align-items: center; gap: 10px; background: var(--white); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-weight: 600; color: var(--muted); font-size: .95rem; }
+.stepper li span { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--cream); color: var(--forest); font-weight: 700; }
+.stepper li.done { color: var(--forest); border-color: var(--forest); background: var(--good-bg); }
+.stepper li.done span { background: var(--forest); color: var(--white); }
+.scenario-step { border-left: 5px solid var(--line); }
+.scenario-step.done { border-left-color: var(--forest); }
+.step-head { display: flex; align-items: center; gap: 12px; }
+.step-num { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: var(--forest-dark); font-weight: 800; flex: none; }
+.scenario-step.done .step-num { background: var(--forest); color: var(--white); }
+.real-note { background: var(--cream); border-radius: 12px; padding: 10px 14px; font-size: .9rem; margin: 0; }
+.scenario-step textarea { font-size: .95rem; }
+.compare-title { color: var(--forest); font-size: 1.1rem; margin-top: 18px; }
+.data-table tr.ours td { background: #f2f8ef; }
+@media (max-width: 860px) { .stepper { grid-template-columns: minmax(0, 1fr); } }

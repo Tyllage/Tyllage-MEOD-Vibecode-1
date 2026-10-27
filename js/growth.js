@@ -13,6 +13,7 @@
     { id: "admin", label: "Settings" }
   ];
   const TABS = [
+    { id: "scenario", group: "home", label: "Nai Bai scenario", render: scenarioView },
     { id: "overview", group: "home", label: "Growth dashboard", render: overview },
     { id: "advisor", group: "home", label: "Growth Advisor", render: advisor },
     { id: "strategy", group: "home", label: "All recommendations", render: strategy },
@@ -1286,6 +1287,86 @@
           sd.crops.map((x) => [h("strong", null, x.c.name), sparkline(x.recurring), x.recurring[x.recurring.length - 1] + " kg", "+" + x.growth.toFixed(1) + " kg", Math.max(0, x.headroom) + " kg", h("span", null, pill(x.signal.tone, x.signal.label), h("span", { class: "muted small block" }, x.signal.text)), h("a", { class: "link", href: "#demand/" + x.c.id }, "Planting →")])),
         h("p", { class: "muted small" }, "Spare supply = harvest left after trade, group-buy and pre-order commitments, minus what's already paid for. A flag means 'investigate', not 'plant': the farm manager decides in Demand → Planting with forecasts, margin and yield risk.")),
       panel(null, howNote("Synthetic weekly orders from the savings checker plus this browser's demo orders, split by crop.", "Real orders tagged by the offer and channel that brought them, with repeat customers identified by their account."))
+    ];
+  }
+
+  // The demo that has to work end to end: "we want more customers for Nai Bai".
+  function scenarioView() {
+    const S = M.SCENARIO, st = S.state();
+    const g = S.goal(), p = S.plan(), r = S.results(), d = S.decision();
+    const bought = st.launched && (r.mine > 0 || r.mineVisits > 0);
+    const done = [true, st.launched, bought, bought, Boolean(st.decision)];
+    const step = (n, title, isDone, real, simulated, ...kids) => h("section", { class: "panel scenario-step" + (isDone ? " done" : "") },
+      h("div", { class: "step-head" }, h("span", { class: "step-num" }, isDone ? "✓" : String(n)), h("h2", { class: "panel-title" }, title)),
+      kids,
+      h("p", { class: "real-note" }, h("strong", null, "Works in this prototype: "), real, h("br"), h("strong", null, "Simulated: "), simulated));
+    const link = p.link;
+    const fcRow = (x) => [h("span", null, h("strong", null, x.who), h("span", { class: "muted small block" }, x.way)),
+      x.complete ? M.money(x.veg) : h("span", { class: "muted" }, x.missing + " not stocked locally"), x.fee ? M.money(x.fee) : "S$0.00",
+      x.savings ? M.money(-x.savings) : h("span", { class: "muted small" }, x.savingsNote), x.complete ? h("strong", null, M.money(x.total)) : "—",
+      x.checked === "Not checked" ? pill("warn", "Not checked") : x.checked];
+
+    return [
+      band("Nai Bai: from campaign to planting decision", "One complete journey: pick the crop, choose who to target and what to offer, let customers buy, measure what happened, then decide whether demand justifies growing more.",
+        [h("a", { class: "btn btn-sm btn-gold", href: link }, "Open the customer view ↗"),
+          h("button", { class: "btn btn-sm btn-outline-light", type: "button", onclick: () => { if (confirm("Restart the Nai Bai scenario in this browser?")) { S.reset(); toast("Scenario restarted."); route(); } } }, "Restart scenario")]),
+      h("ol", { class: "stepper", "aria-label": "Scenario progress" }, ["Goal", "Segment & offer", "Customers buy", "Measure", "Decide"].map((t, i) =>
+        h("li", { class: done[i] ? "done" : "" }, h("span", null, done[i] ? "✓" : String(i + 1)), t))),
+
+      step(1, "Goal: more customers for Nai Bai", true,
+        "Reads spare harvest, margin and repeat share from the farm data.", "The harvest and sales figures.",
+        kpis(kpi("Not yet committed", g.spare + " kg/wk", "spare harvest to sell"), kpi("Paid last week", g.latest + " kg"), kpi("Margin", M.pct(g.margin)), kpi("From returning buyers", M.pct(g.repeatNow))),
+        h("p", null, g.why)),
+
+      step(2, "Who to target, and what to offer", st.launched,
+        "Segment counts from the customer list, offer ranking against the price floor, the price comparison and the sustainability check.", "Customer list, costs and every supermarket price (placeholders, not checked).",
+        table([{ label: "Segment" }, { label: "Households", num: true }, { label: "How we reach them" }, { label: "Why" }],
+          p.segments.map((x) => [h("strong", null, x.name), x.n, x.how, h("span", { class: "small" }, x.why)]), { compact: true }),
+        h("h3", { class: "small-title" }, `Offer for the ${p.co.lines.map((l) => l.grams + " g " + l.c.name).join(" + ")} bundle (${M.money(p.co.subtotal)})`),
+        table([{ label: "Offer" }, { label: "Customer pays", num: true }, { label: "Our contribution", num: true }, { label: "6-month value", num: true }, { label: "Floor" }, { label: "" }],
+          p.options.map((o) => [h("strong", null, o.name), M.money(o.pay), M.money(o.e.contribution) + " (" + M.pct(o.e.margin) + ")", M.money(o.sixMonth), pill(o.ok ? "good" : "bad", o.ok ? "Passes" : "Below floor"),
+            o.ok ? h("button", { type: "button", class: "chip" + (p.chosen.id === o.id ? " on" : ""), "aria-pressed": String(p.chosen.id === o.id), onclick: () => { st.offer = o.id; M.save(); route(); } }, p.chosen.id === o.id ? "Chosen" : "Choose") : ""]), { compact: true }),
+        h("h3", { class: "small-title" }, "What the same basket costs elsewhere (what customers will see)"),
+        table([{ label: "Where" }, { label: "Vegetables", num: true }, { label: "Delivery / collection", num: true }, { label: "Vouchers & promos", num: true }, { label: "Total", num: true }, { label: "Price checked" }],
+          p.fc.rows.map(fcRow), { compact: true }),
+        h("p", { class: "verdict-line" }, pill(p.sustain.ok ? "good" : "bad", p.sustain.ok ? "Sustainable" : "Not sustainable"),
+          p.sustain.local ? ` To match ${p.sustain.local.who} (${p.sustain.local.way.toLowerCase()}) at ${M.money(p.sustain.matchPrice)}, we'd keep ${M.money(p.sustain.contribution)} a bundle (${M.pct(p.sustain.margin)} margin) with pickup. Our lowest sustainable price is ${M.money(p.sustain.floor)}.` : " No complete like-for-like basket elsewhere to match."),
+        h("div", { class: "approve-row" },
+          h("button", { class: "btn btn-forest", type: "button", onclick: () => { S.launch(p.chosen.id); logDecision({ kind: "campaign", title: `${S.CODE}: ${p.chosen.name}`, status: "Launched" }); toast("Campaign launched in the demo. Nothing was sent."); route(); } }, st.launched ? "Relaunch with this offer" : `Launch with "${p.chosen.name}"`),
+          st.launched ? h("span", { class: "muted small" }, "Launched " + new Date(st.launchedAt).toLocaleString("en-SG")) : null)),
+
+      step(3, "Customers discover the campaign and buy", done[2],
+        "The link opens the shop with the bundle and offer ready. Visits and demo orders through it are counted here.", "Nobody is messaged; the WhatsApp text is a draft.",
+        st.launched ? [
+          h("p", null, "Leader WhatsApp draft:"),
+          (() => { const ta = h("textarea", { rows: 4, readonly: true }); ta.value = `Hi neighbours! Fresh Nai Bai from our Kranji farm this Thursday. Nai Bai + Xiao Bai Cai bundle, ${M.money(p.chosen.pay)} when you collect here (${p.chosen.name.toLowerCase()}). Order: ${link}\nReply STOP to opt out.`; return ta; })(),
+          h("div", { class: "approve-row" },
+            h("a", { class: "btn btn-gold", href: link }, "Open it as a customer ↗"),
+            h("button", { class: "btn btn-outline", type: "button", onclick: () => copy(link) }, "Copy link")),
+          kpis(kpi("Your visits through the link", String(r.mineVisits)), kpi("Your demo orders", String(r.mine), "place one, then order again")),
+          r.mine ? null : h("p", { class: "muted small" }, "Try it: open the customer view, place a demo order, tap 'Order the same next week', then come back.")
+        ] : h("p", { class: "muted" }, "Launch the campaign in step 2 first.")),
+
+      step(4, "Measure orders, repeats and profit", st.launched,
+        "Every formula, and your own demo orders and visits are added to the totals.", "The two-week baseline: 410 visits, 34 first orders, 24 repeat orders.",
+        st.launched ? [
+          kpis(kpi("Visits", r.visits.toLocaleString(), M.pct(r.conv) + " placed a first order"), kpi("Orders", String(r.orders), r.firstOrders + " new · " + r.repeatOrders + " repeat"),
+            kpi("Ordered again", M.pct(r.repeatRate), r.repeaters + " of " + r.firstOrders + " new buyers"), kpi("Cost per new customer", M.money(r.cac), "ads + offer")),
+          table([{ label: "Money" }, { label: "Amount", num: true }], [
+            ["Revenue", M.money(r.revenue)], ["Offer cost (first orders only)", M.money(-r.offerCost)], ["Ads and leader posts", M.money(-r.adSpend)],
+            [h("strong", null, "Contribution after produce, packing, drops, leader commission, offer and ads"), h("strong", null, M.money(r.contribution))]], { compact: true }),
+          h("p", { class: "muted small" }, `About ${r.naiBaiKg.toFixed(1)} kg of Nai Bai a week sold through the campaign, ${r.recurringKg.toFixed(1)} kg of it from repeat orders.`)
+        ] : h("p", { class: "muted" }, "Results appear once the campaign is launched.")),
+
+      step(5, "Decide: does demand justify growing more?", Boolean(st.decision),
+        "The checks, the verdict and logging your decision.", "Planting is never changed by the prototype; the farm manager decides.",
+        h("ul", { class: "checks" }, d.checks.map((x) => h("li", { class: x.ok ? "ok" : "no" }, (x.ok ? "✓ " : "✕ ") + x.label))),
+        h("p", { class: "verdict-line" }, pill(d.verdict.tone, d.verdict.label), " " + d.verdict.text),
+        h("div", { class: "approve-row" },
+          h("button", { class: "btn btn-forest", type: "button", onclick: () => { S.decide("Trial approved"); toast("Logged for the farm manager."); route(); } }, "Approve a trial"),
+          h("button", { class: "btn btn-outline", type: "button", onclick: () => { S.decide("Not yet"); route(); } }, "Not yet"),
+          h("a", { class: "link", href: "#demand/" + S.CROP }, "Forecast and planting detail →"),
+          st.decision ? pill("neutral", "Decision: " + st.decision) : null))
     ];
   }
 
