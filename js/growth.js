@@ -5,7 +5,7 @@
 
   // Grouped along the chain: Smart Value → Repeat customers → Verified demand → Farm growth.
   const GROUPS = [
-    { id: "home", label: "Overview" },
+    { id: "home", label: "Growth loop" },
     { id: "value", label: "1 · Smart Value" },
     { id: "keep", label: "2 · Repeat customers" },
     { id: "grow", label: "3 · Demand → Growth" },
@@ -13,8 +13,9 @@
     { id: "admin", label: "Settings" }
   ];
   const TABS = [
-    { id: "overview", group: "home", label: "Overview", render: overview },
-    { id: "strategy", group: "home", label: "Strategy", render: strategy },
+    { id: "overview", group: "home", label: "Growth dashboard", render: overview },
+    { id: "advisor", group: "home", label: "Growth Advisor", render: advisor },
+    { id: "strategy", group: "home", label: "All recommendations", render: strategy },
     { id: "value", group: "value", label: "Value engine", render: valueHome },
     { id: "prices", group: "value", label: "Price check", render: pricesView },
     { id: "offers", group: "value", label: "Offers & margin", render: offersView },
@@ -205,82 +206,124 @@
 
   /* ---------- views ---------- */
 
+  // Growth dashboard: the Demand Growth Loop with one screen of evidence.
   function overview() {
     const f = funnel();
-    const verdicts = M.CROPS.map((c) => ({ c, v: M.plantingVerdict(c) }));
-    const recs = M.strategy();
-    const openTickets = M.state.inbox.filter((x) => x.kind === "ticket" && x.status === "Open").length;
+    const ex = M.experiment(), sd = M.smartDemand();
+    const ev = M.state.events, evCount = (t) => ev.filter((e) => e.type === t).length;
+    const ready = M.CROPS.map(M.evidence).filter((x) => x.verdict.label === "Enough evidence to consider a trial");
+    const camp = M.CAMPAIGNS.map((k) => ({ k, s: M.campaignStats(k) })).sort((a, b) => b.s.contributionPerBuyer - a.s.contributionPerBuyer);
+    const avgContribution = Math.round(M.avg(camp.map((x) => x.s.contributionPerBuyer)));
+    const me = window.TyAccount && window.TyAccount.session();
     const stages = [
-      { label: "Campaign visits", value: f.visits },
-      { label: "First-time buyers", value: f.first },
-      { label: "Came back within 28 days", value: f.repeat }
+      { step: "Discover", value: f.visits.toLocaleString(), text: "visits from search, social and group-buy referrals", href: "#campaigns" },
+      { step: "Convert", value: String(f.first), text: M.pct(f.first / f.visits) + " of visits became paying customers", href: "#value" },
+      { step: "Retain", value: M.pct(f.repeat / f.first), text: "of new buyers ordered again within 28 days", href: "#habits" },
+      { step: "Validate", value: M.money(avgContribution), text: "contribution per new buyer, after campaign cost", href: "#offertest" },
+      { step: "Plan farm growth", value: String(ready.length), text: ready.length ? "crop with enough evidence to consider more: " + ready.map((x) => x.c.name).join(", ") : "crops with enough evidence yet", href: "#advisor" }
     ];
-    const ev = M.state.events;
-    const evCount = (t) => ev.filter((e) => e.type === t).length;
-
     return [
-      band("Good to see you, " + (window.TyAccount && window.TyAccount.session() ? window.TyAccount.shortName(window.TyAccount.session().name) : "team"),
-        `${recs.length} growth recommendations · ${verdicts.filter((x) => x.v.key === "test-more").length} crop ready for a production trial · ${openTickets} open customer question${openTickets === 1 ? "" : "s"}`,
-        [h("a", { class: "btn btn-sm btn-gold", href: "#value" }, "Smart Value engine"), h("a", { class: "btn btn-sm btn-outline-light", href: "#strategy" }, "Open Strategy")]),
-      panel("Smart Value → Repeat customers → Verified demand → Farm growth", chain()),
-      kpis(
-        kpi("Campaign visits", f.visits.toLocaleString(), "last 4 weeks"),
-        kpi("First-time buyers", String(f.first), M.pct(f.first / f.visits) + " of visits"),
-        kpi("Came back within 28 days", String(f.repeat), M.pct(f.repeat / f.first) + " of new buyers"),
-        kpi("Repeat-backed demand", f.weeklyKg + " kg/wk", "latest week × returning share")),
-      questions(),
+      band("Good to see you, " + (me ? window.TyAccount.shortName(me.name) : "team"),
+        "Most farm shops help sell what's already grown. This loop shows what customers want, whether they keep buying, and whether that's enough evidence to grow more.",
+        [h("a", { class: "btn btn-sm btn-gold", href: "#advisor" }, "Ask the Growth Advisor"), h("a", { class: "btn btn-sm btn-outline-light", href: "index.html#savings" }, "Customer view ↗")]),
+      panel("Demand Growth Loop", h("ol", { class: "chain loop5" }, stages.map((x) => h("li", null,
+        h("span", { class: "chain-step" }, x.step), h("strong", null, x.value), h("p", null, x.text), h("a", { class: "link small", href: x.href }, "Open →"))))),
+      priorityPanel(),
       h("div", { class: "grid-2" },
-        panel(aiTitle("Top recommendations"),
-          h("ul", { class: "actions" }, recs.slice(0, 5).map((r) =>
-            h("li", null, pill(r.tone, r.kind), h("span", null, r.title), h("a", { href: r.href, class: "link" }, "Open →")))),
-          h("a", { class: "link", href: "#strategy" }, "See all " + recs.length + " with evidence →")),
-        panel("From attention to dependable demand",
-          h("ol", { class: "funnel" }, stages.map((st, i) => h("li", null,
-            h("span", { class: "funnel-label" }, st.label),
-            h("strong", null, st.value.toLocaleString()),
-            h("span", { class: "muted small" }, i ? M.pct(st.value / stages[i - 1].value) + " of previous step" : "start")))),
-          h("p", { class: "muted small" }, `Likes and views aren't counted. Only visits that reach Tyllage or a group buy, then real purchases. Separately, ${f.interested} households have registered interest; that's a lead, not a step in this funnel.`))),
-      panel("Demand → Planting at a glance",
-        table([{ label: "Crop" }, { label: "Latest paid", num: true }, { label: "Consumer supply", num: true }, { label: "Returning", num: true }, { label: "Forecast" }, { label: "Verdict" }],
-          verdicts.map(({ c, v }) => [h("a", { href: "#demand/" + c.id, class: "link" }, c.name), v.latest + " kg", v.supply + " kg", M.pct(v.repeatNow), M.forecastRead(c).confidence, pill(v.tone, v.label)]))),
+        panel("Campaign conversion",
+          table([{ label: "Campaign" }, { label: "Visits", num: true }, { label: "New buyers", num: true }, { label: "Came back", num: true }, { label: "Per new buyer", num: true }],
+            camp.map(({ k, s: st }) => [h("span", null, h("strong", null, k.name), h("span", { class: "muted small block" }, k.channel)), k.visits.toLocaleString(), k.firstBuyers + " (" + M.pct(st.conv) + ")", M.pct(st.repeatRate), M.money(st.contributionPerBuyer)]), { compact: true }),
+          h("p", { class: "muted small" }, "Per new buyer = contribution from their orders minus discounts and campaign spend. Likes and views aren't counted.")),
+        panel("New and returning customers",
+          barChart({ labels: M.weekLabels(sd.total.length), values: sd.rep, unit: "orders" }),
+          kpis(kpi("Returning orders", String(sd.rep[sd.rep.length - 1]), M.pct(sd.repShare) + " of this week"), kpi("New customers", String(sd.newO[sd.newO.length - 1]), "this week")),
+          h("p", { class: "muted small" }, "Bars: repeat orders a week from the savings checker. Returning orders are the dependable part."))),
+      panel(aiTitle("Group-buy performance and momentum"),
+        table([{ label: "Pickup" }, { label: "Households, 8 weeks" }, { label: "Now", num: true }, { label: "Returning", num: true }, { label: "Status" }, { label: "Momentum" }, { label: "Suggested push" }],
+          M.POINTS.map(M.momentum).map((m) => [h("strong", null, m.p.area), sparkline(m.p.active), m.n + " / " + m.p.capacity, M.pct(m.p.returning), pill(m.st.tone, m.st.label), h("span", { class: "small" }, m.message), h("span", { class: "small" }, m.campaign)])),
+        h("p", { class: "muted small" }, `Targets come from delivery economics, not round numbers: a standard drop costs ${M.money(M.DELIVERY.dropCost)} for up to ${M.STANDARD_MAX} households; a larger delivery costs ${M.money(M.LARGER_DROP.cost)} for up to ${M.LARGER_DROP.households}. Illustrative costs.`)),
+      panel("Contribution margins",
+        table([{ label: "Crop" }, { label: "Price /kg", num: true }, { label: "Cost /kg", num: true }, { label: "Margin", num: true }, { label: "Lowest pickup price /kg", num: true }, { label: "Evidence to grow" }],
+          M.CROPS.map((c) => { const e = M.evidence(c); return [h("a", { class: "link", href: "#demand/" + c.id }, c.name), M.money(c.price), M.money(c.cost), pill(M.margin(c) >= M.rules().minMargin ? "good" : "bad", M.pct(M.margin(c))), M.money(M.priceFloor(c.cost, "pickup")), pill(e.verdict.tone, e.passed + "/5 · " + e.verdict.label)]; }), { compact: true })),
       panel("From this browser (live demo activity)",
-        h("p", { class: "muted small" }, "Try the consumer page, then come back. These counts come from this browser only and are added to the totals above."),
         kpis(
           kpi("Page visits", String(evCount("page_visit"))),
-          kpi("Store, product & recipe clicks", String(evCount("product_click") + evCount("store_click") + evCount("recipe_click") + evCount("rec_click"))),
-          kpi("Ask Tyllage questions", String(evCount("assistant"))),
-          kpi("Harvest interest", String(M.state.interests.length))))
+          kpi("Demo orders", String((M.state.orders || []).length), (M.state.orders || []).filter((o) => o.repeat).length + " repeat"),
+          kpi("Offer clicks", String(evCount("offer_click"))),
+          kpi("Ask Tyllage questions", String(evCount("assistant")))))
     ];
   }
 
-  // The three questions Tyllage answers, each with its headline from the other tabs.
-  function questions() {
-    const j = M.journey().anomalies[0];
-    const fb = M.feedback().themes.find((t) => t.barrier && t.neg >= 2);
-    const cl = M.clv()[0];
-    const due = M.replenishment().filter((x) => x.cu.consent).length;
-    const nai = M.scenarios(M.crop("nai-bai")).slice(1).filter((r) => r.extraContribution > 0 && r.pWaste < 0.15).sort((a, b) => b.extraContribution - a.extraContribution)[0];
-    const trial = M.NEW_CROPS.map((n) => ({ n, r: M.newCropRead(n) })).find((x) => x.r.verdict.label === "Run a small trial");
-    const card = (n, q, lines, href, cta) => h("div", { class: "q-card" },
-      h("span", { class: "q-num" }, n), h("h2", null, q),
-      h("ul", null, lines.filter(Boolean).map((l) => h("li", null, l))),
-      h("a", { class: "link", href }, cta + " →"));
-    return h("div", { class: "q-grid" },
-      card("1", "How do we convince more people to buy Singapore-grown produce?", [
-        j ? `Carts under S$60 are dropping at the delivery fee (about ${j.lostOrders} orders/week). Offer pickup first.` : null,
-        fb ? `${fb.label} is the biggest complaint, so fix it before buying more ads.` : null,
-        "Recipe-led beats discounts on buyers who come back."
-      ], "#journey", "Win customers"),
-      card("2", "How do we turn first-time buyers into consistent customers?", [
-        `${cl.ch} customers are worth the most over 6 months (${M.money(cl.value)}).`,
-        `${due} opted-in customers are due to reorder in the next 3 days.`,
-        "Steady buyers could move to a weekly box."
-      ], "#loyalty", "Keep customers"),
-      card("3", "How do we use growing demand to expand production with confidence?", [
-        nai ? `Nai Bai: the forecast supports a +${M.forecastRead(M.crop("nai-bai")).trialKg} kg/week trial; the simulator's best balance is +${M.pct(nai.pct)} (about ${M.money(nai.extraContribution)}/week more, low waste risk).` : null,
-        trial ? `${trial.n.name}: reservations justify a small trial bed.` : null,
-        ...M.CROPS.filter((c) => M.plantingVerdict(c).key === "grow-demand").map((c) => `${c.name}: don't grow more yet; build repeat demand first.`)
-      ], "#demand", "Grow the farm"));
+  // The question to settle before the next build: acquisition, or predictable repeat demand?
+  function priorityPanel() {
+    const pc = M.priorityCompare(), pr = M.priority();
+    const choose = (p) => () => { M.setPriority(p); logDecision({ kind: "priority", title: p === "repeat" ? "50 weekly households" : "200 one-time customers", status: "Chosen" }); route(); };
+    return panel("Would we rather have 200 new one-time customers, or 50 more households buying every week?",
+      h("div", { class: "segmented wide", role: "group", "aria-label": "Growth priority" },
+        h("button", { type: "button", "aria-pressed": String(pr === "acquire"), onclick: choose("acquire") }, "200 one-time customers"),
+        h("button", { type: "button", "aria-pressed": String(pr === "repeat"), onclick: choose("repeat") }, "50 weekly households")),
+      table([{ label: "Over 6 months" }, { label: "200 one-time", num: true }, { label: "50 weekly", num: true }], [
+        ["Orders", pc.oneTime.orders.toLocaleString(), pc.weekly.orders.toLocaleString()],
+        ["Cost to win them", M.money(pc.oneTime.households * pc.oneTime.cac), M.money(pc.weekly.households * pc.weekly.cac)],
+        ["Contribution after that cost", h("strong", null, M.money(pc.oneTime.contribution)), h("strong", null, M.money(pc.weekly.contribution))],
+        ["Demand we can plan around", "~" + pc.oneTime.kgPerWeek + " kg/wk, unpredictable", "~" + pc.weekly.kgPerWeek + " kg/wk, recurring"]
+      ], { compact: true }),
+      h("p", { class: "muted small" }, `Assumes a ${M.money(1800)} pickup basket earning ${M.money(pc.perOrder)}, one-time buyers coming back like the "Cheaper basket" test group, and weekly households leaving at 3% a week (${pc.weeksKept} orders each on average). The Growth Advisor follows the choice above.`));
+  }
+
+  // Growth Advisor: the next campaign or demand test, and whether there's evidence to grow more.
+  function advisor() {
+    const nm = M.nextMove(), mv = nm.move;
+    const cal = M.calendar(4);
+    const plan = M.experimentPlan(M.CROPS.find((c) => M.evidence(c).verdict.label.startsWith("Almost")) || M.CROPS[0]);
+    const evs = M.CROPS.map(M.evidence);
+    const decided = M.state.decisions.filter((d) => d.kind === "advisor").slice(-1)[0];
+    return [
+      band("Growth Advisor", "What to do next, why, and whether there's enough evidence to grow more. Rules set every limit; you approve every action.",
+        [h("span", { class: "pill good" }, "Priority: " + (nm.pr === "repeat" ? "50 weekly households" : "200 one-time customers")), h("a", { class: "btn btn-sm btn-outline-light", href: "#overview" }, "Change priority")]),
+      nm.fixFirst.length ? panel(aiTitle("Fix these first"),
+        h("div", { class: "type-grid" }, nm.fixFirst.map((x) => h("div", { class: "type-card" }, h("strong", null, x.title), h("p", { class: "small" }, x.text)))),
+        h("p", { class: "muted small" }, "Advertising more won't help while a buying obstacle is losing customers.")) : null,
+      panel(aiTitle("Recommended next move"),
+        h("div", { class: "verdict" },
+          h("h3", { class: "advisor-title" }, mv.title),
+          h("ul", { class: "small-list big" }, mv.why.map((w) => h("li", null, w))),
+          table([{ label: "" }, { label: "" }], [
+            ["Offer", mv.offer], ["Audience", mv.audience], ["Measure", mv.measure]
+          ], { compact: true }),
+          h("p", { class: "small-title" }, "Guardrails (enforced by rules, not the advisor)"),
+          h("ul", { class: "checks" }, mv.guardrails.map((g) => h("li", { class: "ok" }, "✓ " + g)))),
+        h("div", { class: "approve-row" },
+          h("button", { class: "btn btn-forest", type: "button", onclick: () => { logDecision({ kind: "advisor", title: mv.title, status: "Approved" }); toast("Approved. Logged for the team; nothing was sent."); route(); } }, "Approve"),
+          h("button", { class: "btn btn-outline", type: "button", onclick: () => { logDecision({ kind: "advisor", title: mv.title, status: "Not now" }); route(); } }, "Not now"),
+          decided ? h("span", { class: "muted small" }, "Last: " + decided.status + " · " + decided.title) : null)),
+      panel(aiTitle("Harvest-aware campaign calendar"),
+        table([{ label: "Week" }, { label: "What to feature" }, { label: "Watch out" }],
+          cal.map((w, i) => [h("strong", null, w.label),
+            h("span", null, w.slots.map((x) => x.c.name + " (" + x.day + ", " + x.kg + " kg spare)").join(" · ")),
+            h("span", { class: "small" }, [
+              ...w.hol.map((x) => x.name + ": pickups and cutoffs may shift, post a day earlier. "),
+              i >= 2 ? "Harvest is a forecast this far out: confirm before scheduling. " : "",
+              ...w.slots.filter((x) => x.risky).map((x) => x.c.name + ": " + x.flag + ". ")
+            ].join("") || "—")])),
+        h("p", { class: "muted small" }, "Campaigns go only on harvest that's actually available. If supply becomes uncertain, the promotion is flagged for review before it goes live.")),
+      panel(aiTitle("Demand experiment designer"),
+        h("p", null, "Before growing more ", h("strong", null, plan.c.name), ", run a small test across two similar pickups:"),
+        table([{ label: "" }, { label: plan.a.area + " (" + plan.a.id + ")" }, { label: plan.b.area + " (" + plan.b.id + ")" }], [
+          ["Offer", plan.arms[0], plan.arms[1]],
+          ["Households now", String(M.pointStatus(plan.a).now), String(M.pointStatus(plan.b).now)],
+          ["Returning share", M.pct(plan.a.returning), M.pct(plan.b.returning)]
+        ], { compact: true }),
+        h("p", null, `About ${plan.perArm} first buyers per offer to detect a repeat rate rising from 36% to 50%; at roughly ${plan.perWeek} a week that's ${plan.weeks} weeks. Swap offers between the two pickups halfway to rule out the area.` + (plan.weeks > 12 ? ` That's slow: running each offer across two pairs of similar pickups would take about ${Math.ceil(plan.weeks / 2)} weeks.` : "")),
+        h("p", { class: "small" }, "Measure: " + plan.measure.join(" · ") + ". " + plan.stop)),
+      panel(aiTitle("Is there enough evidence to grow more?"),
+        table([{ label: "Crop" }, { label: "Checks" }, { label: "Verdict" }, { label: "Next step" }],
+          evs.map((e) => [h("strong", null, e.c.name),
+            h("ul", { class: "checks" }, e.checks.map((x) => h("li", { class: x.ok ? "ok" : "no" }, (x.ok ? "✓ " : "✕ ") + x.label))),
+            pill(e.verdict.tone, e.verdict.label), h("span", { class: "small" }, e.verdict.next)])),
+        howNote("Fixed rules over paid orders, repeat share, supply, margin and recurring demand. The advisor's wording is a template filled from the same evidence.",
+          "An LLM writes the strategy and explanation from these exact figures; rules still enforce stock limits, price floors and the discount budget. Predictive models only once there's enough real sales history. Decision support: a farm manager decides planting."))
+    ].filter(Boolean);
   }
 
   // 1. AI Growth Strategy Advisor

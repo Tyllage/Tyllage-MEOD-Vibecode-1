@@ -17,6 +17,18 @@ The direction is **Smart Value → Repeat customers → Verified demand → Farm
    - **3 · Demand → Growth:** Verified demand, Demand → Planting, New crops.
    - **Marketing:** Promotions & budget, Campaign Studio, Experiments, SEO, Trends & partners, Farm stories. Plus **Overview**, **Strategy** and **Settings**.
 
+## Demand Growth Loop (flagship workflow)
+
+**Discover → Convert → Retain → Validate → Plan farm growth.** Farm-commerce platforms overseas (e.g. Barn2Door, Local Line, Harvie, GrazeCart) already automate reminders, subscriptions, segmentation and promotions. Tyllage's aim is to connect that demand to production decisions for Singapore farms, including neighbourhood group buys. We don't claim to be the first to combine marketing and farming.
+
+Three connected screens:
+
+1. **Consumer Smart Savings** (`index.html#savings`): approved bundles, collection options, the full checkout total, a reward that fits the shopper (first-time: capped S$2 off; occasional: one-tap repeat; loyal: every-4th-order reward), and a nudge when a few more neighbours would make their pickup cheaper to run.
+2. **Growth dashboard** (team view, first screen): the five loop stages, the **"200 one-time customers or 50 weekly households?"** priority with a 6-month comparison, campaign conversion, new vs returning orders, group-buy performance with **momentum targets from delivery economics**, and contribution margins with evidence-to-grow per crop.
+3. **Growth Advisor**: what to fix first (smart cart recovery, voice of the customer), the **next campaign or demand test** for the chosen priority with guardrails (stock limit, price floor, monthly discount budget), a **harvest-aware calendar** (holidays to confirm, forecast-only weeks flagged), a **demand experiment designer** (two similar pickups, sample size, duration, metrics) and a five-check **evidence-to-grow** verdict per crop.
+
+Rules decide every number and limit (`js/loop.js`). An LLM could later write the strategy and explanations from the same figures; predictive models only once there's enough real sales history. Planting stays a farm manager's decision. Shopify, social and WhatsApp integrations stay planned until authorised.
+
 ## Friendly for every age, plus a mock log-in
 
 - **Text size** (A / A+ / A++) on every page, remembered in this browser; every size scales from one setting.
@@ -223,6 +235,10 @@ js/insights.js    insights part 2: journey anomalies, area opportunities, delive
 js/value.js       Smart Value & Demand Engine: price book + like-for-like comparison, checkout
                   total, smart fulfilment, unit economics + price floor, offer ranking,
                   A/B/C offer test, reward check, verified demand, demo orders
+js/loop.js        Demand Growth Loop: priority comparison, group-buy momentum, personalised
+                  rewards, harvest-aware calendar, experiment designer, evidence to grow, next move
+js/account.js     text size + mock session (name and role only)
+js/login.js       mock log-in and sign-up
 js/ui.js          h() / s() DOM helpers (textContent only), toast, copy, AI pill
 js/site.js        consumer page: weekly savings checker, demo order + repeat, harvest, bundles, Ask Tyllage
 js/growth.js      team view: 24 pages in 6 groups, charts, tables, approvals, settings

@@ -763,3 +763,13 @@ body { background: var(--page); }
 .login-top-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .login-art { justify-content: flex-end; gap: 28px; }
 .login-art h1 { margin-bottom: .1em; }
+
+/* ---------- Demand Growth Loop (team view) ---------- */
+.chain.loop5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.segmented.wide { max-width: 520px; margin: 0; }
+.advisor-title { color: var(--forest-dark); font-size: 1.3rem; margin: 0; }
+.small-list.big { font-size: .97rem; gap: 6px; }
+@media (max-width: 1000px) { .chain.loop5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .chain.loop5 li::before { content: none; } }
+@media (max-width: 520px) { .chain.loop5 { grid-template-columns: minmax(0, 1fr); } }
+.reward-note { display: grid; gap: 6px; justify-items: start; background: #fff8e8; border: 1px solid #ecd9ae; border-radius: 14px; padding: 12px 14px; margin: 0 0 12px; }
+.reward-note p { margin: 0; }

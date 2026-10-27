@@ -337,6 +337,7 @@
       co.goods && other.total !== co.total ? h("p", { class: "nudge" + (other.total > co.total ? " good" : "") },
         other.total > co.total ? `${mode === "home" ? "Pickup" : "Home delivery"} would cost ${M.money(other.total)}. You're saving ${M.money(other.total - co.total)}.`
           : `Pickup would cost ${M.money(other.total)}, ${M.money(co.total - other.total)} less.`) : null,
+      co.goods ? rewardNote(voucher) : null,
       !co.pickupOk ? h("p", { class: "form-error" }, `Group-buy leaders pack baskets from ${M.money(M.PICKUP_MIN)}. Add a little more or choose delivery.`) : null,
       h("button", { class: "btn btn-forest", type: "button", disabled: !co.goods || !co.pickupOk, onclick: () => {
         lastOrder = M.placeOrder({ qty, mode, voucher });
@@ -351,6 +352,8 @@
         h("span", null, h("strong", null, o.label), h("span", { class: "muted small block" }, o.detail)),
         h("strong", null, co.goods ? M.money(o.total) : "—")))),
       co.goods ? h("p", { class: "nudge good" }, fu.why) : null,
+      fu.point && M.momentum(fu.point).gap > 0 ? h("p", { class: "small" }, h("strong", null, "Invite a neighbour: "),
+        `${M.momentum(fu.point).gap} more households collecting at ${fu.point.area} would make this pickup cheaper to run, which helps keep prices fair.`) : null,
       co.goods && fu.best !== mode ? h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => {
         savingsForm.querySelector(`input[name=mode][value=${fu.best}]`).checked = true;
         M.track("fulfil_switch", fu.best);
@@ -358,6 +361,18 @@
       } }, "Switch to " + (fu.best === "pickup" ? "pickup" : "home delivery")) : null].filter(Boolean));
 
     renderCompare(co);
+  }
+
+  // A reward that fits this shopper: first-timers, occasional shoppers and loyal households differ.
+  function rewardNote(voucher) {
+    const r = M.rewardFor();
+    return h("div", { class: "reward-note" },
+      h("span", { class: "pill good" }, "For you · " + r.type),
+      h("p", null, h("strong", null, r.name), " ", h("span", { class: "muted small" }, r.detail + " Illustrative.")),
+      r.cents && voucher !== r.cents ? h("button", { class: "btn btn-sm btn-outline", type: "button", onclick: () => {
+        const radio = savingsForm.querySelector(`input[name=voucher][value="${r.cents}"]`);
+        if (radio) { radio.checked = true; M.track("reward_apply", r.type); renderSavings(); }
+      } }, "Use it") : null);
   }
 
   function renderCompare(co) {
