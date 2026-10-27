@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>This Week at MEOD — Fresh Singapore-Grown Vegetables | Prototype</title>
+  <meta name="description" content="Prototype: see what MEOD Farm is harvesting this week in Kranji, Singapore, find recipes, find a neighbourhood group-buy pickup and tell the farm what you'd buy.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <meta name="theme-color" content="#054f12">
+</head>
+<body class="site">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="proto-bar" role="note">Prototype by Tyllage for MEOD Farm · all data is made up · not MEOD's live site</div>
+
+  <header class="site-header">
+    <nav class="container nav" aria-label="Main">
+      <a class="logo" href="index.html"><img src="assets/meod-light.svg" alt="MEOD Farm home" width="106" height="30"></a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#harvest">This week</a></li>
+        <li><a href="#cook">Cook</a></li>
+        <li><a href="#collect">Collect</a></li>
+        <li><a href="#shape">Shape our harvest</a></li>
+        <li><a href="#farmers">Farmers</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn btn-sm btn-outline-light" href="growth.html">Farm view</a>
+        <a class="btn btn-sm btn-gold" data-store="nav" href="https://meodfresh.com/" target="_blank" rel="noopener">MEOD Fresh ↗</a>
+        <button class="menu-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <img class="hero-bg" src="assets/img/hero-farm.webp" srcset="assets/img/hero-farm-640.webp 640w, assets/img/hero-farm.webp 1200w" sizes="100vw" alt="" fetchpriority="high">
+      <div class="container">
+        <span class="eyebrow badge">This week at MEOD · <span id="hero-week"></span></span>
+        <h1 class="script">Fresh from the farm.</h1>
+        <p class="hero-lead">Made for your table. See what we're harvesting in Kranji this week, find easy ways to cook it, and collect it from a neighbour near you.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-gold" href="#harvest">See this week's harvest</a>
+          <a class="btn btn-ghost" href="#collect">Find a pickup near you</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="info-strip">
+      <div class="container info-row">
+        <span><strong>Delivery</strong> Tue · Thu · Sat</span>
+        <span><strong>Free delivery</strong> from S$60</span>
+        <span><strong>Or collect</strong> from a neighbourhood group buy</span>
+      </div>
+    </div>
+
+    <section id="harvest">
+      <div class="container">
+        <span class="eyebrow dark">This week's harvest</span>
+        <h2 class="script section-title">Picked for you this week</h2>
+        <p class="lead">These are the crops we have the most of right now. Buying them helps the farm sell everything it grows.</p>
+        <div class="crop-grid" id="crop-grid"></div>
+      </div>
+    </section>
+
+    <section id="cook" class="tint">
+      <div class="container">
+        <span class="eyebrow dark">What should I cook?</span>
+        <h2 class="script section-title">Dinner from this week's harvest</h2>
+        <p class="lead">Tell us a little about your household. We'll only suggest recipes using vegetables we have this week.</p>
+        <div class="cook-layout">
+          <form class="card cook-form" id="cook-form">
+            <fieldset>
+              <legend>How many people?</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="size" value="2" checked> 1–2</label>
+                <label class="chip"><input type="radio" name="size" value="4"> 3–4</label>
+                <label class="chip"><input type="radio" name="size" value="6"> 5+</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Time to cook</legend>
+              <div class="chips">
+                <label class="chip"><input type="radio" name="mins" value="15"> 15 min</label>
+                <label class="chip"><input type="radio" name="mins" value="30" checked> 30 min</label>
+                <label class="chip"><input type="radio" name="mins" value="60"> Any</label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Preferences</legend>
+              <div class="chips">
+                <label class="chip"><input type="checkbox" name="pref" value="vegetarian"> Vegetarian</label>
+                <label class="chip"><input type="checkbox" name="pref" value="kid-friendly"> Kid-friendly</label>
+                <label class="chip"><input type="checkbox" name="pref" value="no-spicy"> No spicy</label>
+              </div>
+            </fieldset>
+          </form>
+          <div class="recipe-list" id="recipe-list" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="collect">
+      <div class="container">
+        <span class="eyebrow dark">Neighbourhood group buys</span>
+        <h2 class="script section-title">Collect from a neighbour</h2>
+        <p class="lead">Group-buy leaders receive one delivery for their block and you collect from them. Enter your postal code to find the nearest pickup.</p>
+        <form class="postal-form" id="postal-form" novalidate>
+          <label for="postal" class="sr-only">Postal code</label>
+          <input id="postal" name="postal" inputmode="numeric" autocomplete="postal-code" maxlength="6" placeholder="6-digit postal code, e.g. 820123" required>
+          <button class="btn btn-forest" type="submit">Find pickups</button>
+        </form>
+        <p class="form-note">Your postal code stays in this browser. We only use its first two digits to estimate your area.</p>
+        <p class="form-error" id="postal-error" role="alert"></p>
+        <div class="point-list" id="point-list" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="shape" class="tint">
+      <div class="container shape-layout">
+        <div>
+          <span class="eyebrow dark">Help shape our next harvest</span>
+          <h2 class="script section-title">What would you buy regularly?</h2>
+          <p class="lead">Tell the farm what you'd actually buy. When enough people order regularly, MEOD can plan to grow more of it.</p>
+          <p class="form-note">This is not an order and you won't be charged. It helps MEOD decide what to grow.</p>
+          <div class="interest-summary card" id="interest-summary"></div>
+        </div>
+        <form class="card interest-form" id="interest-form" novalidate>
+          <fieldset>
+            <legend>Which vegetables? <span class="muted">(pick any)</span></legend>
+            <div class="chips" id="interest-crops"></div>
+          </fieldset>
+          <fieldset>
+            <legend>How often?</legend>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="freq" value="weekly" checked> Every week</label>
+              <label class="chip"><input type="radio" name="freq" value="fortnightly"> Every two weeks</label>
+              <label class="chip"><input type="radio" name="freq" value="occasionally"> Occasionally</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>How would you like to get it?</legend>
+            <div class="chips">
+              <label class="chip"><input type="radio" name="via" value="group-buy" checked> Group-buy pickup</label>
+              <label class="chip"><input type="radio" name="via" value="delivery"> Home delivery</label>
+            </div>
+          </fieldset>
+          <label class="field">
+            <span>Postal code <span class="muted">(optional, helps us find you a pickup)</span></span>
+            <input name="postal" inputmode="numeric" maxlength="6" placeholder="e.g. 820123">
+          </label>
+          <label class="check">
+            <input type="checkbox" name="consent" required>
+            <span>MEOD may count my answers when planning what to grow. (No contact details are collected.)</span>
+          </label>
+          <p class="form-error" id="interest-error" role="alert"></p>
+          <button class="btn btn-forest" type="submit">Tell the farm</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="farmers">
+      <div class="container">
+        <span class="eyebrow dark">Meet your farmers</span>
+        <h2 class="script section-title">Grown in Kranji, not flown in</h2>
+        <div class="story-grid">
+          <article class="story card">
+            <img src="assets/img/farmer-vertical-500.webp" alt="A MEOD farmer tending greens" width="500" height="625" loading="lazy">
+            <div class="story-body">
+              <h3>Picked the morning it leaves</h3>
+              <p>We harvest on the day of delivery, so your greens spend hours, not days, getting to you.</p>
+            </div>
+          </article>
+          <article class="story card">
+            <img src="assets/img/ladybug-640.webp" alt="A ladybird on a leaf" width="640" height="427" loading="lazy">
+            <div class="story-body">
+              <h3>Ladybirds, not pesticides</h3>
+              <p>Helpful insects keep pests in check, so we can grow without pesticides.</p>
+            </div>
+          </article>
+          <article class="story card">
+            <img src="assets/img/farm-flatlay-640.webp" alt="MEOD vegetables laid out on a table" width="640" height="427" loading="lazy">
+            <div class="story-body">
+              <h3>Visit, then cook</h3>
+              <p>Come for a farm tour, take home what you picked, and order more for the weeks after.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <img src="assets/meod-light.svg" alt="MEOD Farm" width="106" height="30" loading="lazy">
+      <p>MEOD Fresh · powered by Tyllage. A prototype for MEOD Farm. Products, stock, pickups and numbers on this page are made up for the demo. Orders happen only on <a href="https://meodfresh.com/" target="_blank" rel="noopener">meodfresh.com</a>.</p>
+      <p class="muted-light">© 2026 Tyllage LLP. MEOD name, logo and photos © MEOD Farm.</p>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/site.js"></script>
+</body>
+</html>
